@@ -91,7 +91,7 @@ public class GroupUI extends JFrame implements ActionListener {
 
 }
 
-class test extends JPanel {
+class GroupUITest extends JPanel {
 
 }
 
