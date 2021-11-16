@@ -10,8 +10,15 @@ public class LoginUI extends JFrame implements ActionListener {
     JButton jb1, jb2, jb3;
     JPanel jp1, jp2, jp3, jp4;
     String name;
-    boolean isLogin = false;
+    static boolean isLogin = false;
+    private static LoginUI instance;
 
+    public static LoginUI getInstance() {
+        if (instance == null)
+            instance = new LoginUI();
+
+        return instance;
+    }
     public LoginUI() {
         Container container = this.getContentPane();
 
@@ -67,7 +74,6 @@ public class LoginUI extends JFrame implements ActionListener {
 
         if (e.getSource() == jb1) {
             String student = "123456";
-            String admin = "123321";
 
             String name = jtf.getText();
             String p1 = String.copyValueOf(jpf.getPassword());
