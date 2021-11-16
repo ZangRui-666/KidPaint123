@@ -1,4 +1,5 @@
 import java.net.InetAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +9,8 @@ public class KidPaint {
 	static String StudioIP;
 	static String port;
 	static boolean isServer;
-	static List<String> ConnectedClients= new ArrayList();
+	static List<Socket> ConnectedClients= new ArrayList();
+	static Socket serverSocket;
 
 	public static void main(String[] args) {
 		LoginUI loginUI = LoginUI.getInstance();
