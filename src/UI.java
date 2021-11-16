@@ -241,7 +241,8 @@ public class UI extends JFrame {
                     String msg = KidPaint.name +": "+ msgField.getText();
                     if (KidPaint.isServer == true)
                         serverSendData(msg.getBytes());
-
+                    else
+                        clientSend(msg.getBytes());
                     onTextInputted(msg);
                     msgField.setText("");
                 }
@@ -313,6 +314,23 @@ public class UI extends JFrame {
                 out.writeInt(data[i][j]);
     }
 
+    public void clientSend(byte[] data){
+                try {
+                    DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
+                    out.writeInt(data.length);
+                    out.writeInt(100);
+                    out.write(data);
+
+                } catch (IOException e) {
+                }
+                try {
+                    KidPaint.socket.close();
+                } catch (IOException e) {
+                }
+
+
+
+    }
     public void serverSendData(int[][] data) {
 
         for (Socket clientSocket : KidPaint.ConnectedClients) {
@@ -387,6 +405,15 @@ public class UI extends JFrame {
 
         data[col][row] = selectedColor;
         paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
+        if(KidPaint.isServer)
+            serverSendData(data);
+        else {
+            try {
+                clientSend();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -420,6 +447,15 @@ public class UI extends JFrame {
                 if (x < data.length - 1 && data[x + 1][y] == oriColor) buffer.add(new Point(x + 1, y));
                 if (y > 0 && data[x][y - 1] == oriColor) buffer.add(new Point(x, y - 1));
                 if (y < data[0].length - 1 && data[x][y + 1] == oriColor) buffer.add(new Point(x, y + 1));
+            }
+            if(KidPaint.isServer)
+                serverSendData(data);
+            else {
+                try {
+                    clientSend();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
             paintPanel.repaint();
         }
