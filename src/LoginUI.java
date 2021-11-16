@@ -1,5 +1,4 @@
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Objects;
@@ -20,9 +19,10 @@ public class LoginUI extends JFrame implements ActionListener {
 
         return instance;
     }
+
     public LoginUI() {
         Container container = this.getContentPane();
-        container.setLayout(new GridLayout(0,1,10,10));
+        container.setLayout(new GridLayout(0, 1, 10, 10));
         container.setBackground(Color.white);
         Font font1 = new Font("SansSerif", Font.BOLD, 20);
         JTextArea titleArea1 = new JTextArea();
@@ -47,7 +47,7 @@ public class LoginUI extends JFrame implements ActionListener {
         descriptionArea2.setBackground(Color.white);
         heroJPane = new JPanel();
         heroJPane.setBackground(Color.white);
-        heroJPane.setLayout(new GridLayout(2,0));
+        heroJPane.setLayout(new GridLayout(2, 0));
         heroJPane.add(titleArea1);
         heroJPane.add(descriptionArea2);
         container.add(heroJPane, BorderLayout.NORTH);
@@ -110,11 +110,5 @@ public class LoginUI extends JFrame implements ActionListener {
     public String getName() {
         return name;
     }
-
 }
-
-class loginTest extends JPanel {
-
-}
-
 
