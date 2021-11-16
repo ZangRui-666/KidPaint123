@@ -7,13 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GroupUI extends JFrame implements ActionListener {
-    JLabel groupJLabel, newGroupJLabel, jl1, jl2, jl3;
-    JTextField groupNameJTextField, jtf;
-    JPasswordField jpf;
-    JButton createJButton, jb1, jb2, jb3;
-    JPanel groupDesJPanel, groupButtonsJPanel, createDesJPanel, createJPanel,  jp1, jp2, jp3, jp4;
+    JTextField groupNameJTextField;
+    JTextArea groupArea, newGroupArea;
+    JButton createJButton;
+    JPanel groupJPanel, groupButtonsJPanel, createJPanel;
     String name;
-    static boolean isLogin = false;
 
     static ArrayList<String> currentGroupNames= new ArrayList<String>();
     private static GroupUI instance;
@@ -40,74 +38,51 @@ public class GroupUI extends JFrame implements ActionListener {
 
 
         Font font1 = new Font("SansSerif", Font.BOLD, 20);
-        groupJLabel = new JLabel();
-        groupJLabel.setFont(font1);
-        groupJLabel.setText("Current existing groups(click to join in): ");
-        groupJLabel.setBounds(10, 20, 600, 30);
+        groupArea = new JTextArea();
+        groupArea.setEditable(false);
+        groupArea.setLineWrap(true);
+        groupArea.setWrapStyleWord(true);
+        groupArea.setFont(font1);
+        groupArea.setText("Current existing groups(click to join in): ");
+        groupArea.setBounds(10, 20, 700, 30);
 
-        groupDesJPanel = new JPanel();
-        groupDesJPanel.setLayout(null);
-        groupDesJPanel.add(groupJLabel);
-        groupDesJPanel.setBounds(0,0,this.getWidth(), 200);
-
-        container.add(groupDesJPanel);
-
-
-
+        groupJPanel = new JPanel();
+        groupJPanel.setLayout(null);
+        groupJPanel.add(groupArea);
 
         groupButtonsJPanel = new JPanel();
-        groupButtonsJPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        groupButtonsJPanel.setBounds(50, 70, 600, 500);
         for(int i = 0; i < currentGroupNames.size(); i++){
             JButton button = new JButton(currentGroupNames.get(i));
-            button.setPreferredSize(new Dimension(80, 50));
+            button.setPreferredSize(new Dimension(100, 50));
             groupButtonsJPanel.add(button);
         }
-        container.add(groupButtonsJPanel);
+        groupButtonsJPanel.setBackground(Color.white);
+        groupJPanel.add(groupButtonsJPanel);
+        groupJPanel.setBackground(Color.white);
+        container.add(groupJPanel);
 
-        newGroupJLabel = new JLabel();
-        newGroupJLabel.setFont(font1);
-        newGroupJLabel.setText("Create a new group, input the group name and click create button: ");
-        newGroupJLabel.setBounds(10, 10, 800, 30);
+        newGroupArea = new JTextArea();
+        newGroupArea.setFont(font1);
+        newGroupArea.setEditable(false);
+        newGroupArea.setLineWrap(true);
+        newGroupArea.setWrapStyleWord(true);
+        newGroupArea.setText("Create a new group, input the group name and click create button: ");
+        newGroupArea.setBounds(10, 20, 750, 30);
 
-        createDesJPanel = new JPanel();
-        createDesJPanel.setLayout(null);
-        createDesJPanel.add(newGroupJLabel);
-        createDesJPanel.setBounds(0,0,this.getWidth(), 200);
-
-        container.add(createDesJPanel);
-
-        groupNameJTextField = new JTextField();
-        //groupNameJTextField.setBounds(400, 50, 200, 30);
-        container.add(groupNameJTextField);
-
-        createJButton = new JButton("Submit");
-        createJButton.setBounds(350, 30, 80, 50);
         createJPanel = new JPanel();
         createJPanel.setLayout(null);
-        createJPanel.setBackground(Color.white);
-        container.add(createJPanel, BorderLayout.SOUTH);
+        createJPanel.add(newGroupArea);
+
+        groupNameJTextField = new JTextField();
+        groupNameJTextField.setBounds(220, 90, 200, 30);
+        createJPanel.add(groupNameJTextField);
+
+        createJButton = new JButton("Create");
+        createJButton.setBounds(280, 150, 80, 50);
         createJPanel.add(createJButton);
-
-
-
-
-//        jp1 = new JPanel();
-//        jtf = new JTextField();
-//        jp1.add(jl1);
-//        jp1.add(jtf);
-//
-//        jp2 = new JPanel();
-//        jp2.add(jl2);
-//        jpf = new JPasswordField(16);
-//        jp2.add(jpf);
-//
-//        jb1 = new JButton("Submit");
-//
-//
-//        this.add(jp1);
-//        this.add(jp2);
-//        this.add(jb1);
-
+        createJPanel.setBackground(Color.white);
+        container.add(createJPanel);
 
         //submitJButton.addActionListener(this);
         this.setTitle("KidPaint.FindGroup");
@@ -124,17 +99,16 @@ public class GroupUI extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        if (e.getSource() == jb1) {
-            String student = "123456";
-
-            String name = jtf.getText();
-            String p1 = String.copyValueOf(jpf.getPassword());
-
-            if (p1.equals(student)) {
-                this.name = name;
-                this.isLogin = true;
-            }
-        }
+//        if (e.getSource() == jb1) {
+//            String student = "123456";
+//
+//            String name = jtf.getText();
+//            String p1 = String.copyValueOf(jpf.getPassword());
+//
+//            if (p1.equals(student)) {
+//                this.name = name;
+//            }
+//        }
     }
 
     public String getName() {
