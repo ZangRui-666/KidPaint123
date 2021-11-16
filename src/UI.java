@@ -17,6 +17,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.awt.FlowLayout;
@@ -37,7 +38,7 @@ public class UI extends JFrame {
     private JPanel paintPanel;
     private JToggleButton tglPen;
     private JToggleButton tglBucket;
-    private
+
 
 
     private static UI instance;
@@ -237,10 +238,11 @@ public class UI extends JFrame {
             public void keyReleased(KeyEvent e) {
                 if (e.getKeyCode() == 10) {
                     // if the user press ENTER
-                    if (KidPaint.isServer == true) {
+                    String msg = KidPaint.name +": "+ msgField.getText();
+                    if (KidPaint.isServer == true)
+                        serverSendData(msg.getBytes());
 
-                    }
-                    onTextInputted(msgField.getText());
+                    onTextInputted(msg);
                     msgField.setText("");
                 }
             }
@@ -268,11 +270,24 @@ public class UI extends JFrame {
                 int len = in.readInt();
                 int specifier = in.readInt();
                 if (specifier == 100) {
-                    updateChatbox(buffer, len);
                     in.read(buffer, 0, len);
+                    updateChatbox(buffer, len);
+                    if(KidPaint.isServer){
+                        byte[] trimmedBuffer = new byte[len];
+                        System.arraycopy(buffer,0,trimmedBuffer,0,len);
+                        serverSendData(buffer);
+                    }
                 }
-                else if (specifier == 223)
-                    updatePainting(in);
+                else if (specifier == 223){
+                    int[][] newData = new int[50][50];
+                    for (int i = 0; i < 50; i++)
+                        for (int j = 0; j < 50; j++)
+                            newData[i][j] = in.readInt();
+                    updatePainting(newData);
+                    if(KidPaint.isServer){
+                        serverSendData(newData);
+                    }
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -285,23 +300,20 @@ public class UI extends JFrame {
         });
     }
 
-    private void updatePainting(DataInputStream in) throws IOException {
-        int[][] newData = new int[50][50];
-        for (int i = 0; i < 50; i++)
-            for (int j = 0; j < 50; j++)
-                newData[i][j] = in.readInt();
+    private void updatePainting(int[][] newData) {
         data = newData;
     }
 
     public void clientSend() throws IOException {
-        DataOutputStream out = new DataOutputStream(KidPaint.serverSocket.getOutputStream());
+        DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
         out.writeInt(10000);
         out.writeInt(223);
         for (int i = 0; i < 50; i++)
             for (int j = 0; j < 50; j++)
                 out.writeInt(data[i][j]);
     }
-    public void ServerSendData() {
+
+    public void serverSendData(int[][] data) {
 
         for (Socket clientSocket : KidPaint.ConnectedClients) {
             new Thread(() -> {
@@ -324,6 +336,25 @@ public class UI extends JFrame {
         }
     }
 
+    public void serverSendData(byte[] data){
+        for (Socket clientSocket : KidPaint.ConnectedClients) {
+            new Thread(() -> {
+                try {
+                    DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+                    out.writeInt(data.length);
+                    out.writeInt(100);
+                    out.write(data);
+
+                } catch (IOException e) {
+                }
+                try {
+                    clientSocket.close();
+                } catch (IOException e) {
+                }
+
+            }).start();
+        }
+    }
     /**
      * it will be invoked if the user selected the specific color through the color picker
      *
@@ -342,7 +373,8 @@ public class UI extends JFrame {
      * @param text - user inputted text
      */
     private void onTextInputted(String text) {
-        chatArea.setText(chatArea.getText() + text + "\n");
+        if(KidPaint.isServer)
+            chatArea.setText(chatArea.getText() + text + "\n");
     }
 
     /**
