@@ -1,6 +1,8 @@
 import javax.swing.*;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
@@ -23,6 +25,9 @@ import java.util.List;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import javax.swing.JScrollPane;
+import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
 import java.awt.Color;
 import javax.swing.border.LineBorder;
 
@@ -38,8 +43,7 @@ public class UI extends JFrame {
     private JButton revocationBt;
     static ServerSocket serverSocket;
     static List<Socket> connectedClients = new ArrayList();
-    static List<String> clientsNames = new ArrayList();
-
+    static List<String> clientsNames = new ArrayList<>();
 
     private String message;
     private static UI instance;
@@ -506,6 +510,7 @@ public class UI extends JFrame {
             Socket cSocket = serverSocket.accept();
             synchronized(connectedClients) {
                 connectedClients.add(cSocket);
+                clientsNames.add(cSocket.getInetAddress().toString());
                 System.out.printf("Total %d clients are connected.\n", connectedClients.size());
             }
             Thread t = new Thread(() -> {
