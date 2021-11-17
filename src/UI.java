@@ -43,7 +43,7 @@ public class UI extends JFrame {
     private JToggleButton tglBucket;
     static ServerSocket serverSocket;
     static List<Socket> connectedClients = new ArrayList();
-
+    static List<String> clientsNames = new ArrayList<>();
 
     private String message;
     private static UI instance;
@@ -467,6 +467,7 @@ public class UI extends JFrame {
             Socket cSocket = serverSocket.accept();
             synchronized(connectedClients) {
                 connectedClients.add(cSocket);
+                clientsNames.add(cSocket.getInetAddress().toString());
                 System.out.printf("Total %d clients are connected.\n", connectedClients.size());
             }
             Thread t = new Thread(() -> {
