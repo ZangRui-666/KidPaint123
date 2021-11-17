@@ -2,7 +2,8 @@ import javax.swing.*;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.net.Socket;
+import java.io.IOException;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +15,11 @@ public class GroupUI extends JFrame implements ActionListener {
     String name;
 
     static ArrayList<String> currentGroupNames= new ArrayList<String>();
+    ArrayList<JButton> groupButtons = new ArrayList<>();
+    static boolean newGroup = false;
     private static GroupUI instance;
+
+    DatagramSocket socket;
 
     public static GroupUI getInstance() {
         if (instance == null)
@@ -23,6 +28,12 @@ public class GroupUI extends JFrame implements ActionListener {
         return instance;
     }
     public GroupUI() {
+        try{
+            socket = new DatagramSocket(5555);
+        } catch (SocketException e) {
+            System.out.println("There is something wrong on building socket!");
+            e.printStackTrace();
+        }
         currentGroupNames.add("stu1");
         currentGroupNames.add("stu2");
         currentGroupNames.add("stu3");
@@ -54,6 +65,8 @@ public class GroupUI extends JFrame implements ActionListener {
         groupButtonsJPanel.setBounds(50, 70, 600, 500);
         for(int i = 0; i < currentGroupNames.size(); i++){
             JButton button = new JButton(currentGroupNames.get(i));
+            groupButtons.add(button);
+            button.addActionListener(this);
             button.setPreferredSize(new Dimension(100, 50));
             groupButtonsJPanel.add(button);
         }
@@ -84,7 +97,8 @@ public class GroupUI extends JFrame implements ActionListener {
         createJPanel.setBackground(Color.white);
         container.add(createJPanel);
 
-        //submitJButton.addActionListener(this);
+
+        createJButton.addActionListener(this);
         this.setTitle("KidPaint.FindGroup");
         this.setSize(800, 600);
         this.setLocation(100, 100);
@@ -99,22 +113,40 @@ public class GroupUI extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
 
-//        if (e.getSource() == jb1) {
-//            String student = "123456";
-//
-//            String name = jtf.getText();
-//            String p1 = String.copyValueOf(jpf.getPassword());
-//
-//            if (p1.equals(student)) {
-//                this.name = name;
-//            }
-//        }
+        if (e.getSource() == createJButton) {
+            String newGroupName = groupNameJTextField.getText().trim();
+            if(newGroupName.isEmpty()) return;
+            name = newGroupName;
+            newGroup = true;
+            System.out.println("create new group name: " + name);
+        }
+        for(int i = 0; i < groupButtons.size(); i++){
+            if(e.getSource() == groupButtons.get(i)){
+                newGroup = false;
+                name = currentGroupNames.get(i);
+                System.out.println("join in group name: " + name);
+                break;
+            }
+        }
     }
 
     public String getName() {
         return name;
     }
 
+    private void sendMessage(String sentMessage){
+        try {
+            byte[] msg = sentMessage.getBytes();
+            InetAddress dest = InetAddress.getByName("255.255.255.255");
+            int port = 5555;
+            DatagramPacket packet = new DatagramPacket(msg, msg.length, dest, port);
+            socket.send(packet);
+            System.out.println("The message: " + sentMessage + " has been sent.");
+        } catch (IOException e) {
+            System.out.println("There is something wrong in broadcasting finding group message!");
+            e.printStackTrace();
+        }
+    }
 }
 
 class GroupUITest extends JPanel {
