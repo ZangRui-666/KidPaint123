@@ -40,7 +40,7 @@ public class UI extends JFrame {
     private JToggleButton tglPen;
     private JToggleButton tglBucket;
 
-
+    private String message;
     private static UI instance;
     private int selectedColor = -543230;    //golden
 
@@ -279,7 +279,7 @@ public class UI extends JFrame {
             String srcAddress = packet.getAddress().toString();
             int dstPort = packet.getPort();
             if (packet.getData().toString().equalsIgnoreCase("Find Studio")) {
-                DatagramPacket p = new DatagramPacket(msg.getBytes(), msg.length(), InetAddress.getByName(srcAddress), dstPort);
+                DatagramPacket p = new DatagramPacket(message.getBytes(), message.length(), InetAddress.getByName(srcAddress), dstPort);
                 GroupUI.socket.send(p);
             }
         }
