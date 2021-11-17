@@ -86,6 +86,10 @@ public class UI extends JFrame {
                     e.printStackTrace();
                 }
             }).start();
+        }else {
+            new Thread(() -> {
+                receiveData(KidPaint.socket);
+            }).start();
         }
         setTitle("KidPaint");
         JPanel basePanel = new JPanel();
@@ -331,13 +335,13 @@ public class UI extends JFrame {
         }
     }
 
-    private void updateChatbox(byte[] buffer, int length) {
+    private synchronized void updateChatbox(byte[] buffer, int length) {
         SwingUtilities.invokeLater(() -> {
             chatArea.append(new String(buffer, 0, length) + "\n");
         });
     }
 
-    private void updatePainting(int[][] newData) {
+    private synchronized void updatePainting(int[][] newData) {
         data = newData;
     }
 
