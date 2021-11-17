@@ -6,11 +6,11 @@ import java.util.List;
 
 public class KidPaint {
 	static String name;
-	static String StudioName;
-	static String StudioIP;
+	static String studioName;
+	static String studioIP;
 	static String port;
 	static boolean isServer;
-	static List<Socket> ConnectedClients= new ArrayList();
+	static List<Socket> connectedClients = new ArrayList();
 	static Socket socket;
 	static ServerSocket serverSocket;
 
@@ -20,8 +20,13 @@ public class KidPaint {
 
 		while (!LoginUI.isLogin){}
 		loginUI.setVisible(false);
-
 		name = loginUI.getName();
+
+		GroupUI groupUI = GroupUI.getInstance();
+		groupUI.setVisible(true);
+		while (studioName!=null){}
+
+
 		UI ui = UI.getInstance();			// get the instance of UI
 		ui.setData(new int[50][50], 20);	// set the data array and block size. comment this statement to use the default data array and block size.
 		ui.setVisible(true);				// set the ui

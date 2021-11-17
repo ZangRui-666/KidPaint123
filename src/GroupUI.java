@@ -8,27 +8,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GroupUI extends JFrame implements ActionListener {
+
     JTextField groupNameJTextField;
     JTextArea groupArea, newGroupArea;
     JButton createJButton;
     JPanel groupJPanel, groupButtonsJPanel, createJPanel;
     String name;
 
-    static ArrayList<String> currentGroupNames= new ArrayList<String>();
+    static ArrayList<String> currentGroupNames = new ArrayList<String>();
+    static ArrayList<String> currentServerIP = new ArrayList<>();
     ArrayList<JButton> groupButtons = new ArrayList<>();
     static boolean newGroup = false;
     private static GroupUI instance;
 
-    DatagramSocket socket;
+    static DatagramSocket socket;
 
     public static GroupUI getInstance() {
         if (instance == null)
             instance = new GroupUI();
-
         return instance;
     }
+
     public GroupUI() {
-        try{
+        try {
             socket = new DatagramSocket(5555);
         } catch (SocketException e) {
             System.out.println("There is something wrong on building socket!");
@@ -63,7 +65,7 @@ public class GroupUI extends JFrame implements ActionListener {
 
         groupButtonsJPanel = new JPanel();
         groupButtonsJPanel.setBounds(50, 70, 600, 500);
-        for(int i = 0; i < currentGroupNames.size(); i++){
+        for (int i = 0; i < currentGroupNames.size(); i++) {
             JButton button = new JButton(currentGroupNames.get(i));
             groupButtons.add(button);
             button.addActionListener(this);
@@ -115,14 +117,14 @@ public class GroupUI extends JFrame implements ActionListener {
 
         if (e.getSource() == createJButton) {
             String newGroupName = groupNameJTextField.getText().trim();
-            if(newGroupName.isEmpty()) return;
+            if (newGroupName.isEmpty()) return;
             name = newGroupName;
-            newGroup = true;
+            KidPaint.isServer = true;
             System.out.println("create new group name: " + name);
         }
-        for(int i = 0; i < groupButtons.size(); i++){
-            if(e.getSource() == groupButtons.get(i)){
-                newGroup = false;
+        for (int i = 0; i < groupButtons.size(); i++) {
+            if (e.getSource() == groupButtons.get(i)) {
+                KidPaint.isServer = false;
                 name = currentGroupNames.get(i);
                 System.out.println("join in group name: " + name);
                 break;
@@ -134,7 +136,21 @@ public class GroupUI extends JFrame implements ActionListener {
         return name;
     }
 
-    private void sendMessage(String sentMessage){
+    private void receiveMessage(DatagramSocket socket){
+        byte[] b = new byte[1024];
+        DatagramPacket packet = new DatagramPacket(b, 1024);
+        try {
+            socket.receive(packet);
+            String str = new String(packet.getData());
+            String[] splitStr = str.split(";;");
+            currentGroupNames.add(splitStr[0]);
+            currentServerIP.add(splitStr[1]);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendMessage(String sentMessage) {
         try {
             byte[] msg = sentMessage.getBytes();
             InetAddress dest = InetAddress.getByName("255.255.255.255");
