@@ -17,7 +17,6 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,9 +36,9 @@ public class UI extends JFrame {
     private JToggleButton tglPen;
     private JToggleButton tglBucket;
     private JButton revocationBt;
-    private JList<String> memberList;
     static ServerSocket serverSocket;
     static List<Socket> connectedClients = new ArrayList();
+    static List<String> clientsNames = new ArrayList();
 
 
     private String message;
@@ -89,6 +88,13 @@ public class UI extends JFrame {
             }).start();
         }
         setTitle("KidPaint");
+
+        //测试数据~
+        clientsNames.add("test1");
+        clientsNames.add("test2");
+        clientsNames.add("test3");
+        clientsNames.add("test4");
+        clientsNames.add("test5");
 
         JPanel basePanel = new JPanel();
         getContentPane().add(basePanel, BorderLayout.CENTER);
@@ -248,18 +254,27 @@ public class UI extends JFrame {
             }
         });
 
-        String[] memberStrArray = new String[];
-        for (int i = 0; i < memberStrArray.length; i++)
-            memberStrArray[i] = memberStr.get(i);
-        memberList = new JList<>(memberStrArray);
-        JScrollPane sp = new JScrollPane(memberList);
-        toolPanel.add(sp, BorderLayout.CENTER);
-        JButton btn = new JButton("Go...");
-        toolPanel.add(btn, BorderLayout.SOUTH);
+        JPanel manageGroupJP = new JPanel();
+        manageGroupJP.setLayout(new FlowLayout());
+
+        String[] memberStrArray = new String[clientsNames.size()];
+        for (int i = 0; i < clientsNames.size(); i++)
+            memberStrArray[i] = " " + clientsNames.get(i);
+        JList<String> listView = new JList<String>(memberStrArray);
+        JScrollPane sp = new JScrollPane(listView, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        sp.setPreferredSize(new Dimension(100, 25));
+
+        JButton btn = new JButton("Delete");
+        manageGroupJP.add(sp);
+        manageGroupJP.add(btn);
+
+        toolPanel.add(manageGroupJP);
         btn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println(memberList.getSelectedValue());
+                //在这加按delete之后的action~ value加了个空格记得trim（）~
+                System.out.println(listView.getSelectedValue().trim());
+                System.out.println("the size of the listView" + memberStrArray.length);
             }
         });
 
