@@ -5,7 +5,6 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
-import java.util.List;
 
 public class GroupUI extends JFrame implements ActionListener {
 
@@ -13,12 +12,10 @@ public class GroupUI extends JFrame implements ActionListener {
     JTextArea groupArea, newGroupArea;
     JButton createJButton;
     JPanel groupJPanel, groupButtonsJPanel, createJPanel;
-    String name;
 
-    static ArrayList<String> currentGroupNames = new ArrayList<String>();
-    static ArrayList<String> currentServerIP = new ArrayList<>();
+    static ArrayList<String> studioNames = new ArrayList<String>();
+    static ArrayList<String> serverIP = new ArrayList<>();
     ArrayList<JButton> groupButtons = new ArrayList<>();
-    static boolean newGroup = false;
     private static GroupUI instance;
 
     static DatagramSocket socket;
@@ -36,14 +33,12 @@ public class GroupUI extends JFrame implements ActionListener {
             System.out.println("There is something wrong on building socket!");
             e.printStackTrace();
         }
-        currentGroupNames.add("stu1");
-        currentGroupNames.add("stu2");
-        currentGroupNames.add("stu3");
-        currentGroupNames.add("stu4");
-        currentGroupNames.add("stu5");
-        currentGroupNames.add("stu6");
-        currentGroupNames.add("stu7");
-        currentGroupNames.add("stu8");
+
+        sendMessage("Find Studio");
+        long timer = System.currentTimeMillis();
+        while (System.currentTimeMillis() - timer < 1500) {
+            receiveMessage(socket);
+        }
 
         Container container = this.getContentPane();
         container.setLayout(new GridLayout(0, 1, 10, 10));
@@ -65,8 +60,8 @@ public class GroupUI extends JFrame implements ActionListener {
 
         groupButtonsJPanel = new JPanel();
         groupButtonsJPanel.setBounds(50, 70, 600, 500);
-        for (int i = 0; i < currentGroupNames.size(); i++) {
-            JButton button = new JButton(currentGroupNames.get(i));
+        for (int i = 0; i < studioNames.size(); i++) {
+            JButton button = new JButton(studioNames.get(i));
             groupButtons.add(button);
             button.addActionListener(this);
             button.setPreferredSize(new Dimension(100, 50));
@@ -118,39 +113,37 @@ public class GroupUI extends JFrame implements ActionListener {
         if (e.getSource() == createJButton) {
             String newGroupName = groupNameJTextField.getText().trim();
             if (newGroupName.isEmpty()) return;
-            name = newGroupName;
+            KidPaint.studioName = newGroupName;
             KidPaint.isServer = true;
-            System.out.println("create new group name: " + name);
+            System.out.println("create new group name: " + KidPaint.studioName);
         }
         for (int i = 0; i < groupButtons.size(); i++) {
             if (e.getSource() == groupButtons.get(i)) {
                 KidPaint.isServer = false;
-                name = currentGroupNames.get(i);
-                System.out.println("join in group name: " + name);
+                KidPaint.studioName = studioNames.get(i);
+                connectToServer(serverIP.get(i),2345);
+                System.out.println("join in group name: " + KidPaint.studioName);
                 break;
             }
         }
     }
 
-    public String getName() {
-        return name;
-    }
 
-    private void receiveMessage(DatagramSocket socket){
+    private void receiveMessage(DatagramSocket socket) {
         byte[] b = new byte[1024];
         DatagramPacket packet = new DatagramPacket(b, 1024);
         try {
             socket.receive(packet);
             String str = new String(packet.getData());
             String[] splitStr = str.split(";;");
-            currentGroupNames.add(splitStr[0]);
-            currentServerIP.add(splitStr[1]);
+            studioNames.add(splitStr[0]);
+            serverIP.add(splitStr[1]);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void connectToServer(String IP, int port){
+    private void connectToServer(String IP, int port) {
         try {
             KidPaint.socket = new Socket(IP, port);
         } catch (IOException e) {
@@ -171,10 +164,6 @@ public class GroupUI extends JFrame implements ActionListener {
             e.printStackTrace();
         }
     }
-}
-
-class GroupUITest extends JPanel {
-
 }
 
 

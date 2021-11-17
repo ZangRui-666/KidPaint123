@@ -40,6 +40,7 @@ public class UI extends JFrame {
     private JToggleButton tglPen;
     private JToggleButton tglBucket;
 
+
     private String message;
     private static UI instance;
     private int selectedColor = -543230;    //golden
@@ -308,7 +309,7 @@ public class UI extends JFrame {
                             newData[i][j] = in.readInt();
                     updatePainting(newData);
                     if (KidPaint.isServer) {
-                        serverSendData(newData);
+                        serverSendData();
                     }
                 }
             }
@@ -353,7 +354,7 @@ public class UI extends JFrame {
 
     }
 
-    public void serverSendData(int[][] data) {
+    public void serverSendData() {
 
         for (Socket clientSocket : KidPaint.connectedClients) {
             new Thread(() -> {
@@ -429,7 +430,7 @@ public class UI extends JFrame {
         data[col][row] = selectedColor;
         paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
         if (KidPaint.isServer)
-            serverSendData(data);
+            serverSendData();
         else {
             try {
                 clientSend();
@@ -472,7 +473,7 @@ public class UI extends JFrame {
                 if (y < data[0].length - 1 && data[x][y + 1] == oriColor) buffer.add(new Point(x, y + 1));
             }
             if (KidPaint.isServer)
-                serverSendData(data);
+                serverSendData();
             else {
                 try {
                     clientSend();
