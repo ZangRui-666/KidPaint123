@@ -13,8 +13,12 @@ import java.awt.event.MouseMotionListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.awt.FlowLayout;
@@ -23,7 +27,7 @@ import java.awt.Graphics2D;
 import java.awt.Color;
 import javax.swing.border.LineBorder;
 
-enum PaintMode {Pixel, Area};
+enum PaintMode {Pixel, Area}
 
 public class UI extends JFrame {
     private JTextField msgField;
@@ -34,9 +38,11 @@ public class UI extends JFrame {
     private JToggleButton tglBucket;
     private JButton revocationBt;
     private JList<String> memberList;
+    static ServerSocket serverSocket;
+    static List<Socket> connectedClients = new ArrayList();
 
 
-
+    private String message;
     private static UI instance;
     private int selectedColor = -543230;    //golden
 
@@ -60,6 +66,28 @@ public class UI extends JFrame {
      * private constructor. To create an instance of UI, call UI.getInstance() instead.
      */
     private UI() {
+        if (KidPaint.isServer) {
+            new Thread(() -> {
+                while (true) {
+                    try {
+                        receiveAndNotify();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+            new Thread(() ->{
+                try {
+                    server();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+        }else {
+            new Thread(() -> {
+                receiveData(KidPaint.socket);
+            }).start();
+        }
         setTitle("KidPaint");
 
         JPanel basePanel = new JPanel();
@@ -259,8 +287,8 @@ public class UI extends JFrame {
             public void keyReleased(KeyEvent e) {
                 if (e.getKeyCode() == 10) {
                     // if the user press ENTER
-                    String msg = KidPaint.name +": "+ msgField.getText();
-                    if (KidPaint.isServer == true)
+                    String msg = KidPaint.name + ": " + msgField.getText();
+                    if (KidPaint.isServer)
                         serverSendData(msg.getBytes());
                     else
                         clientSend(msg.getBytes());
@@ -284,6 +312,21 @@ public class UI extends JFrame {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
+    //for server use
+    public void receiveAndNotify() throws IOException {
+        message = KidPaint.name + ";;" + "2345";
+        while (true) {
+            DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
+            GroupUI.socket.receive(packet);
+            String srcAddress = packet.getAddress().toString();
+            int dstPort = packet.getPort();
+            if (packet.getData().toString().equalsIgnoreCase("Find Studio")) {
+                DatagramPacket p = new DatagramPacket(message.getBytes(), message.length(), InetAddress.getByName(srcAddress), dstPort);
+                GroupUI.socket.send(p);
+            }
+        }
+    }
+
     private void receiveData(Socket socket) {
         try {
             byte[] buffer = new byte[1024];
@@ -294,20 +337,19 @@ public class UI extends JFrame {
                 if (specifier == 100) {
                     in.read(buffer, 0, len);
                     updateChatbox(buffer, len);
-                    if(KidPaint.isServer){
+                    if (KidPaint.isServer) {
                         byte[] trimmedBuffer = new byte[len];
-                        System.arraycopy(buffer,0,trimmedBuffer,0,len);
+                        System.arraycopy(buffer, 0, trimmedBuffer, 0, len);
                         serverSendData(buffer);
                     }
-                }
-                else if (specifier == 223){
+                } else if (specifier == 223) {
                     int[][] newData = new int[50][50];
                     for (int i = 0; i < 50; i++)
                         for (int j = 0; j < 50; j++)
                             newData[i][j] = in.readInt();
                     updatePainting(newData);
-                    if(KidPaint.isServer){
-                        serverSendData(newData);
+                    if (KidPaint.isServer) {
+                        serverSendData();
                     }
                 }
             }
@@ -316,13 +358,13 @@ public class UI extends JFrame {
         }
     }
 
-    private void updateChatbox(byte[] buffer, int length) {
+    private synchronized void updateChatbox(byte[] buffer, int length) {
         SwingUtilities.invokeLater(() -> {
             chatArea.append(new String(buffer, 0, length) + "\n");
         });
     }
 
-    private void updatePainting(int[][] newData) {
+    private synchronized void updatePainting(int[][] newData) {
         data = newData;
     }
 
@@ -335,26 +377,26 @@ public class UI extends JFrame {
                 out.writeInt(data[i][j]);
     }
 
-    public void clientSend(byte[] data){
-                try {
-                    DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
-                    out.writeInt(data.length);
-                    out.writeInt(100);
-                    out.write(data);
+    public void clientSend(byte[] data) {
+        try {
+            DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
+            out.writeInt(data.length);
+            out.writeInt(100);
+            out.write(data);
 
-                } catch (IOException e) {
-                }
-                try {
-                    KidPaint.socket.close();
-                } catch (IOException e) {
-                }
-
+        } catch (IOException e) {
+        }
+        try {
+            KidPaint.socket.close();
+        } catch (IOException e) {
+        }
 
 
     }
-    public void serverSendData(int[][] data) {
 
-        for (Socket clientSocket : KidPaint.ConnectedClients) {
+    public void serverSendData() {
+
+        for (Socket clientSocket : connectedClients) {
             new Thread(() -> {
                 try {
                     DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
@@ -375,8 +417,8 @@ public class UI extends JFrame {
         }
     }
 
-    public void serverSendData(byte[] data){
-        for (Socket clientSocket : KidPaint.ConnectedClients) {
+    public void serverSendData(byte[] data) {
+        for (Socket clientSocket : connectedClients) {
             new Thread(() -> {
                 try {
                     DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
@@ -394,6 +436,7 @@ public class UI extends JFrame {
             }).start();
         }
     }
+
     /**
      * it will be invoked if the user selected the specific color through the color picker
      *
@@ -412,7 +455,7 @@ public class UI extends JFrame {
      * @param text - user inputted text
      */
     private void onTextInputted(String text) {
-        if(KidPaint.isServer)
+        if (KidPaint.isServer)
             chatArea.setText(chatArea.getText() + text + "\n");
     }
 
@@ -426,8 +469,8 @@ public class UI extends JFrame {
 
         data[col][row] = selectedColor;
         paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
-        if(KidPaint.isServer)
-            serverSendData(data);
+        if (KidPaint.isServer)
+            serverSendData();
         else {
             try {
                 clientSend();
@@ -437,6 +480,30 @@ public class UI extends JFrame {
         }
     }
 
+    public void serve(Socket clientSocket){
+        receiveData(clientSocket);
+    }
+
+    public void server() throws IOException {
+            serverSocket = new ServerSocket(2345);
+
+        while (true){
+            Socket cSocket = serverSocket.accept();
+            synchronized(connectedClients) {
+                connectedClients.add(cSocket);
+                System.out.printf("Total %d clients are connected.\n", connectedClients.size());
+            }
+            Thread t = new Thread(() -> {
+                serve(cSocket);
+                synchronized(connectedClients) {
+                    connectedClients.remove(cSocket);
+                }
+            });
+            t.start();
+        }
+    }
+
+
     /**
      * change the color of a specific area
      *
@@ -444,12 +511,12 @@ public class UI extends JFrame {
      * @return a list of modified pixels
      */
     public List paintArea(int col, int row) {
-        LinkedList<Point> filledPixels = new LinkedList<Point>();
+        LinkedList<Point> filledPixels = new LinkedList<>();
 
         if (col >= data.length || row >= data[0].length) return filledPixels;
 
         int oriColor = data[col][row];
-        LinkedList<Point> buffer = new LinkedList<Point>();
+        LinkedList<Point> buffer = new LinkedList<>();
 
         if (oriColor != selectedColor) {
             buffer.add(new Point(col, row));
@@ -469,8 +536,8 @@ public class UI extends JFrame {
                 if (y > 0 && data[x][y - 1] == oriColor) buffer.add(new Point(x, y - 1));
                 if (y < data[0].length - 1 && data[x][y + 1] == oriColor) buffer.add(new Point(x, y + 1));
             }
-            if(KidPaint.isServer)
-                serverSendData(data);
+            if (KidPaint.isServer)
+                serverSendData();
             else {
                 try {
                     clientSend();
