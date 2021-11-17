@@ -18,7 +18,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.awt.FlowLayout;
@@ -39,6 +41,8 @@ public class UI extends JFrame {
     private JPanel paintPanel;
     private JToggleButton tglPen;
     private JToggleButton tglBucket;
+    static ServerSocket serverSocket;
+    static List<Socket> connectedClients = new ArrayList();
 
 
     private String message;
@@ -67,8 +71,17 @@ public class UI extends JFrame {
     private UI() {
         if (KidPaint.isServer) {
             new Thread(() -> {
+                while (true) {
+                    try {
+                        receiveAndNotify();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+            new Thread(() ->{
                 try {
-                    receiveAndNotify();
+                    server();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -356,7 +369,7 @@ public class UI extends JFrame {
 
     public void serverSendData() {
 
-        for (Socket clientSocket : KidPaint.connectedClients) {
+        for (Socket clientSocket : connectedClients) {
             new Thread(() -> {
                 try {
                     DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
@@ -378,14 +391,13 @@ public class UI extends JFrame {
     }
 
     public void serverSendData(byte[] data) {
-        for (Socket clientSocket : KidPaint.connectedClients) {
+        for (Socket clientSocket : connectedClients) {
             new Thread(() -> {
                 try {
                     DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                     out.writeInt(data.length);
                     out.writeInt(100);
                     out.write(data);
-
                 } catch (IOException e) {
                 }
                 try {
@@ -439,6 +451,30 @@ public class UI extends JFrame {
             }
         }
     }
+
+    public void serve(Socket clientSocket){
+        receiveData(clientSocket);
+    }
+
+    public void server() throws IOException {
+            serverSocket = new ServerSocket(2345);
+
+        while (true){
+            Socket cSocket = serverSocket.accept();
+            synchronized(connectedClients) {
+                connectedClients.add(cSocket);
+                System.out.printf("Total %d clients are connected.\n", connectedClients.size());
+            }
+            Thread t = new Thread(() -> {
+                serve(cSocket);
+                synchronized(connectedClients) {
+                    connectedClients.remove(cSocket);
+                }
+            });
+            t.start();
+        }
+    }
+
 
     /**
      * change the color of a specific area

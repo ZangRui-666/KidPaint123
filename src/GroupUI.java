@@ -13,7 +13,7 @@ public class GroupUI extends JFrame implements ActionListener {
     JButton createJButton;
     JPanel groupJPanel, groupButtonsJPanel, createJPanel;
 
-    static ArrayList<String> studioNames = new ArrayList<String>();
+    static ArrayList<String> studioNames = new ArrayList<>();
     static ArrayList<String> serverIP = new ArrayList<>();
     ArrayList<JButton> groupButtons = new ArrayList<>();
     private static GroupUI instance;
@@ -34,7 +34,7 @@ public class GroupUI extends JFrame implements ActionListener {
             e.printStackTrace();
         }
 
-        sendMessage("Find Studio");
+        sendMessage();
         long timer = System.currentTimeMillis();
         while (System.currentTimeMillis() - timer < 1500) {
             receiveMessage(socket);
@@ -60,8 +60,8 @@ public class GroupUI extends JFrame implements ActionListener {
 
         groupButtonsJPanel = new JPanel();
         groupButtonsJPanel.setBounds(50, 70, 600, 500);
-        for (int i = 0; i < studioNames.size(); i++) {
-            JButton button = new JButton(studioNames.get(i));
+        for (String studioName : studioNames) {
+            JButton button = new JButton(studioName);
             groupButtons.add(button);
             button.addActionListener(this);
             button.setPreferredSize(new Dimension(100, 50));
@@ -121,7 +121,7 @@ public class GroupUI extends JFrame implements ActionListener {
             if (e.getSource() == groupButtons.get(i)) {
                 KidPaint.isServer = false;
                 KidPaint.studioName = studioNames.get(i);
-                connectToServer(serverIP.get(i),2345);
+                connectToServer(serverIP.get(i));
                 System.out.println("join in group name: " + KidPaint.studioName);
                 break;
             }
@@ -143,22 +143,22 @@ public class GroupUI extends JFrame implements ActionListener {
         }
     }
 
-    private void connectToServer(String IP, int port) {
+    private void connectToServer(String IP) {
         try {
-            KidPaint.socket = new Socket(IP, port);
+            KidPaint.socket = new Socket(IP, 2345);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void sendMessage(String sentMessage) {
+    private void sendMessage() {
         try {
-            byte[] msg = sentMessage.getBytes();
+            byte[] msg = "Find Studio".getBytes();
             InetAddress dest = InetAddress.getByName("255.255.255.255");
             int port = 5555;
             DatagramPacket packet = new DatagramPacket(msg, msg.length, dest, port);
             socket.send(packet);
-            System.out.println("The message: " + sentMessage + " has been sent.");
+            System.out.println("The message: " + "Find Studio" + " has been sent.");
         } catch (IOException e) {
             System.out.println("There is something wrong in broadcasting finding group message!");
             e.printStackTrace();

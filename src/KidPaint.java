@@ -10,9 +10,7 @@ public class KidPaint {
 	static String studioIP;
 	static String port;
 	static boolean isServer;
-	static List<Socket> connectedClients = new ArrayList();
 	static Socket socket;
-	static ServerSocket serverSocket;
 
 	public static void main(String[] args) {
 		LoginUI loginUI = LoginUI.getInstance();
