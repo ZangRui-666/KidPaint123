@@ -150,6 +150,14 @@ public class GroupUI extends JFrame implements ActionListener {
         }
     }
 
+    private void connectToServer(String IP, int port){
+        try {
+            KidPaint.socket = new Socket(IP, port);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void sendMessage(String sentMessage) {
         try {
             byte[] msg = sentMessage.getBytes();

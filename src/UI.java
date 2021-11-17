@@ -273,6 +273,7 @@ public class UI extends JFrame {
 
     //for server use
     public void receiveAndNotify() throws IOException {
+        message = KidPaint.name + ";;" + "2345";
         while (true) {
             DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
             GroupUI.socket.receive(packet);
