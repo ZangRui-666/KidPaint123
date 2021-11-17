@@ -261,7 +261,7 @@ public class UI extends JFrame {
                 if (e.getKeyCode() == 10) {
                     // if the user press ENTER
                     String msg = KidPaint.name + ": " + msgField.getText();
-                    if (KidPaint.isServer == true)
+                    if (KidPaint.isServer)
                         serverSendData(msg.getBytes());
                     else
                         clientSend(msg.getBytes());
@@ -483,12 +483,12 @@ public class UI extends JFrame {
      * @return a list of modified pixels
      */
     public List paintArea(int col, int row) {
-        LinkedList<Point> filledPixels = new LinkedList<Point>();
+        LinkedList<Point> filledPixels = new LinkedList<>();
 
         if (col >= data.length || row >= data[0].length) return filledPixels;
 
         int oriColor = data[col][row];
-        LinkedList<Point> buffer = new LinkedList<Point>();
+        LinkedList<Point> buffer = new LinkedList<>();
 
         if (oriColor != selectedColor) {
             buffer.add(new Point(col, row));
