@@ -378,16 +378,26 @@ public class UI extends JFrame {
                             newData[i][j] = in.readInt();
                     updatePainting(newData);
                     if (KidPaint.isServer) {
+                        String name = clientsNames.get(connectedClients.indexOf(socket));
                         serverSendData();
+                        String msg = name + "has made a change";
+                        onTextInputted(msg);
+                        serverSendData(msg.getBytes());
                     }
                 } else if (specifier == 236) {
                     if (KidPaint.isServer) {
                         synchronized (clientsNames) {
-                            DataInputStream dos = new DataInputStream(socket.getInputStream());
-                            byte[] b = new byte[1024];
-                            dos.read(b, 0, len);
-                            String str = new String(b);
-                            clientsNames.add(str);
+                            synchronized (connectedClients) {
+                                DataInputStream dos = new DataInputStream(socket.getInputStream());
+                                byte[] b = new byte[1024];
+                                dos.read(b, 0, len);
+                                String str = new String(b);
+                                int index = connectedClients.indexOf(socket);
+                                clientsNames.add(index, str);
+                                String msg = str + " has joined the studio";
+                                serverSendData((msg).getBytes());
+                                onTextInputted(msg);
+                            }
                         }
                     }
                 }
@@ -459,10 +469,6 @@ public class UI extends JFrame {
 
                     } catch (IOException e) {
                     }
-                    try {
-                        clientSocket.close();
-                    } catch (IOException e) {
-                    }
 
                 }).start();
             }
@@ -478,13 +484,9 @@ public class UI extends JFrame {
                         out.writeInt(data.length);
                         out.writeInt(100);
                         out.write(data);
+                    } catch (IOException e) {
+                    }
 
-                    } catch (IOException e) {
-                    }
-                    try {
-                        clientSocket.close();
-                    } catch (IOException e) {
-                    }
 
                 }).start();
             }
@@ -537,7 +539,6 @@ public class UI extends JFrame {
     }
 
     public void serve(Socket clientSocket) {
-        askClientForName(clientSocket);
         receiveData(clientSocket);
     }
 
@@ -572,7 +573,6 @@ public class UI extends JFrame {
             Socket cSocket = serverSocket.accept();
             synchronized (connectedClients) {
                 connectedClients.add(cSocket);
-                clientsNames.add(cSocket.getInetAddress().toString());
                 System.out.printf("Total %d clients are connected.\n", connectedClients.size());
             }
             Thread t = new Thread(() -> {
