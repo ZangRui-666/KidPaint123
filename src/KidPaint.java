@@ -22,7 +22,7 @@ public class KidPaint {
 
 		GroupUI groupUI = GroupUI.getInstance();
 		groupUI.setVisible(true);
-		while (studioName!=null){}
+		while (studioName==null){}
 		groupUI.setVisible(false);
 
 		UI ui = UI.getInstance();			// get the instance of UI

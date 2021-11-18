@@ -37,9 +37,12 @@ public class GroupUI extends JFrame implements ActionListener {
 
         sendMessage();
         long timer = System.currentTimeMillis();
+        Thread thread = new Thread(() -> receiveMessage(socket));
+        thread.start();
+
         while (System.currentTimeMillis() - timer < 1500) {
-            receiveMessage(socket);
         }
+        socket.close();
 
         Container container = this.getContentPane();
         container.setLayout(new GridLayout(0, 1, 10, 10));
@@ -104,9 +107,6 @@ public class GroupUI extends JFrame implements ActionListener {
         this.setVisible(true);
     }
 
-    public static void main(String[] args) {
-        new GroupUI();
-    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -136,9 +136,12 @@ public class GroupUI extends JFrame implements ActionListener {
         try {
             socket.receive(packet);
             String str = new String(packet.getData());
-            String[] splitStr = str.split(";;");
-            studioNames.add(splitStr[0]);
-            serverIP.add(splitStr[1]);
+            if (str.charAt(0) == '#' && str.charAt(1) == '#') {
+                str = str.substring(2);
+                String[] splitStr = str.split(";;");
+                studioNames.add(splitStr[0]);
+                serverIP.add(splitStr[1]);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
