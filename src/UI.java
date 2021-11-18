@@ -79,14 +79,14 @@ public class UI extends JFrame {
                     }
                 }
             }).start();
-            new Thread(() ->{
+            new Thread(() -> {
                 try {
                     server();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }).start();
-        }else {
+        } else {
             new Thread(() -> {
                 receiveData(KidPaint.socket);
             }).start();
@@ -264,7 +264,7 @@ public class UI extends JFrame {
         String[] memberStrArray = new String[clientsNames.size()];
         for (int i = 0; i < clientsNames.size(); i++)
             memberStrArray[i] = " " + clientsNames.get(i);
-        JList<String> listView = new JList<String>(memberStrArray);
+        JList<String> listView = new JList<>(memberStrArray);
         JScrollPane sp = new JScrollPane(listView, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         sp.setPreferredSize(new Dimension(100, 25));
 
@@ -273,13 +273,23 @@ public class UI extends JFrame {
         manageGroupJP.add(btn);
 
         toolPanel.add(manageGroupJP);
-        btn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //在这加按delete之后的action~ value加了个空格记得trim（）~
-                System.out.println(listView.getSelectedValue().trim());
-                System.out.println("the size of the listView" + memberStrArray.length);
+        btn.addActionListener(e -> {
+            synchronized (clientsNames) {
+                synchronized (connectedClients) {
+                    int index = clientsNames.indexOf(listView.getSelectedValue());
+                    try {
+                        connectedClients.get(index).close();
+                        connectedClients.remove(index);
+                        clientsNames.remove(index);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+
+                }
             }
+
+            System.out.println(listView.getSelectedValue().trim());
+            System.out.println("the size of the listView" + memberStrArray.length);
         });
 
         JPanel msgPanel = new JPanel();
@@ -370,6 +380,10 @@ public class UI extends JFrame {
                     if (KidPaint.isServer) {
                         serverSendData();
                     }
+                } else if (specifier == 236) {
+                    if (!KidPaint.isServer)
+                        clientSendName();
+
                 }
             }
         } catch (IOException e) {
@@ -383,8 +397,10 @@ public class UI extends JFrame {
         });
     }
 
-    private synchronized void updatePainting(int[][] newData) {
-        data = newData;
+    private void updatePainting(int[][] newData) {
+        synchronized (data) {
+            data = newData;
+        }
     }
 
     public void clientSend() throws IOException {
@@ -394,6 +410,16 @@ public class UI extends JFrame {
         for (int i = 0; i < 50; i++)
             for (int j = 0; j < 50; j++)
                 out.writeInt(data[i][j]);
+    }
+
+    public void clientSendName() {
+        try {
+            DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
+            out.writeInt(KidPaint.name.getBytes().length);
+            out.write(KidPaint.name.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void clientSend(byte[] data) {
@@ -486,7 +512,9 @@ public class UI extends JFrame {
     public void paintPixel(int col, int row) {
         if (col >= data.length || row >= data[0].length) return;
 
-        data[col][row] = selectedColor;
+        synchronized (data) {
+            data[col][row] = selectedColor;
+        }
         paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
         if (KidPaint.isServer)
             serverSendData();
@@ -499,23 +527,48 @@ public class UI extends JFrame {
         }
     }
 
-    public void serve(Socket clientSocket){
+    public void serve(Socket clientSocket) {
+        askClientForName(clientSocket);
         receiveData(clientSocket);
     }
 
-    public void server() throws IOException {
-            serverSocket = new ServerSocket(2345);
+    public void askClientForName(Socket socket) {
+        try {
+            DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+            dos.writeInt(4);
+            dos.writeInt(336);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        while (true){
+        try {
+            synchronized (clientsNames) {
+                DataInputStream dos = new DataInputStream(socket.getInputStream());
+                byte[] b = new byte[1024];
+                int len = dos.readInt();
+                dos.read(b, 0, len);
+                String str = new String(b);
+                clientsNames.add(str);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void server() throws IOException {
+        serverSocket = new ServerSocket(2345);
+
+        while (true) {
             Socket cSocket = serverSocket.accept();
-            synchronized(connectedClients) {
+            synchronized (connectedClients) {
                 connectedClients.add(cSocket);
                 clientsNames.add(cSocket.getInetAddress().toString());
                 System.out.printf("Total %d clients are connected.\n", connectedClients.size());
             }
             Thread t = new Thread(() -> {
                 serve(cSocket);
-                synchronized(connectedClients) {
+                synchronized (connectedClients) {
                     connectedClients.remove(cSocket);
                 }
             });
@@ -534,27 +587,28 @@ public class UI extends JFrame {
         LinkedList<Point> filledPixels = new LinkedList<>();
 
         if (col >= data.length || row >= data[0].length) return filledPixels;
+        synchronized (data) {
+            int oriColor = data[col][row];
+            LinkedList<Point> buffer = new LinkedList<>();
 
-        int oriColor = data[col][row];
-        LinkedList<Point> buffer = new LinkedList<>();
+            if (oriColor != selectedColor) {
+                buffer.add(new Point(col, row));
 
-        if (oriColor != selectedColor) {
-            buffer.add(new Point(col, row));
+                while (!buffer.isEmpty()) {
+                    Point p = buffer.removeFirst();
+                    int x = p.x;
+                    int y = p.y;
 
-            while (!buffer.isEmpty()) {
-                Point p = buffer.removeFirst();
-                int x = p.x;
-                int y = p.y;
+                    if (data[x][y] != oriColor) continue;
 
-                if (data[x][y] != oriColor) continue;
+                    data[x][y] = selectedColor;
+                    filledPixels.add(p);
 
-                data[x][y] = selectedColor;
-                filledPixels.add(p);
-
-                if (x > 0 && data[x - 1][y] == oriColor) buffer.add(new Point(x - 1, y));
-                if (x < data.length - 1 && data[x + 1][y] == oriColor) buffer.add(new Point(x + 1, y));
-                if (y > 0 && data[x][y - 1] == oriColor) buffer.add(new Point(x, y - 1));
-                if (y < data[0].length - 1 && data[x][y + 1] == oriColor) buffer.add(new Point(x, y + 1));
+                    if (x > 0 && data[x - 1][y] == oriColor) buffer.add(new Point(x - 1, y));
+                    if (x < data.length - 1 && data[x + 1][y] == oriColor) buffer.add(new Point(x + 1, y));
+                    if (y > 0 && data[x][y - 1] == oriColor) buffer.add(new Point(x, y - 1));
+                    if (y < data[0].length - 1 && data[x][y + 1] == oriColor) buffer.add(new Point(x, y + 1));
+                }
             }
             if (KidPaint.isServer)
                 serverSendData();
