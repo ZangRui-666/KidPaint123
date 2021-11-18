@@ -2,6 +2,7 @@ import javax.swing.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
@@ -146,6 +147,10 @@ public class GroupUI extends JFrame implements ActionListener {
     private void connectToServer(String IP) {
         try {
             KidPaint.socket = new Socket(IP, 2345);
+            DataOutputStream dop = new DataOutputStream(KidPaint.socket.getOutputStream());
+            dop.writeInt(KidPaint.name.getBytes().length);
+            dop.writeInt(236);
+            dop.write(KidPaint.name.getBytes());
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -381,9 +381,15 @@ public class UI extends JFrame {
                         serverSendData();
                     }
                 } else if (specifier == 236) {
-                    if (!KidPaint.isServer)
-                        clientSendName();
-
+                    if (KidPaint.isServer) {
+                        synchronized (clientsNames) {
+                            DataInputStream dos = new DataInputStream(socket.getInputStream());
+                            byte[] b = new byte[1024];
+                            dos.read(b, 0, len);
+                            String str = new String(b);
+                            clientsNames.add(str);
+                        }
+                    }
                 }
             }
         } catch (IOException e) {
@@ -440,45 +446,48 @@ public class UI extends JFrame {
     }
 
     public void serverSendData() {
+        synchronized (connectedClients) {
+            for (Socket clientSocket : connectedClients) {
+                new Thread(() -> {
+                    try {
+                        DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+                        out.writeInt(10000);
+                        out.writeInt(223);
+                        for (int i = 0; i < 50; i++)
+                            for (int j = 0; j < 50; j++)
+                                out.writeInt(data[i][j]);
 
-        for (Socket clientSocket : connectedClients) {
-            new Thread(() -> {
-                try {
-                    DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
-                    out.writeInt(10000);
-                    out.writeInt(223);
-                    for (int i = 0; i < 50; i++)
-                        for (int j = 0; j < 50; j++)
-                            out.writeInt(data[i][j]);
+                    } catch (IOException e) {
+                    }
+                    try {
+                        clientSocket.close();
+                    } catch (IOException e) {
+                    }
 
-                } catch (IOException e) {
-                }
-                try {
-                    clientSocket.close();
-                } catch (IOException e) {
-                }
-
-            }).start();
+                }).start();
+            }
         }
     }
 
     public void serverSendData(byte[] data) {
-        for (Socket clientSocket : connectedClients) {
-            new Thread(() -> {
-                try {
-                    DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
-                    out.writeInt(data.length);
-                    out.writeInt(100);
-                    out.write(data);
+        synchronized (connectedClients) {
+            for (Socket clientSocket : connectedClients) {
+                new Thread(() -> {
+                    try {
+                        DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+                        out.writeInt(data.length);
+                        out.writeInt(100);
+                        out.write(data);
 
-                } catch (IOException e) {
-                }
-                try {
-                    clientSocket.close();
-                } catch (IOException e) {
-                }
+                    } catch (IOException e) {
+                    }
+                    try {
+                        clientSocket.close();
+                    } catch (IOException e) {
+                    }
 
-            }).start();
+                }).start();
+            }
         }
     }
 
