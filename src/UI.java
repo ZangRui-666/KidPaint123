@@ -344,12 +344,11 @@ public class UI extends JFrame {
 
     //for server use
     public void receiveAndNotify() throws IOException {
-        message = "##" + KidPaint.name + ";;" + "2345";
-        KidPaint.dSocket = new DatagramSocket(5555);
+        message = "##" + KidPaint.studioName + ";;" + "2345";
         while (true) {
             DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
             KidPaint.dSocket.receive(packet);
-            String srcAddress = packet.getAddress().toString();
+            String srcAddress = packet.getAddress().toString().substring(1);
             String msg = new String(packet.getData(), 0, packet.getLength());
             System.out.println("Received a packet: " + msg);
             int dstPort = packet.getPort();
