@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KidPaint {
-	static String name = "xiaoming";
+	static String name;
 	static String studioName = "";
 	static String studioIP;
 	static String port;
-	static boolean isServer= false;
+	static boolean isServer= true;
 	static Socket socket;
 	static DatagramSocket dSocket;
 
