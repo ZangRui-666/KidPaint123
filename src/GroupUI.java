@@ -19,8 +19,6 @@ public class GroupUI extends JFrame implements ActionListener {
     ArrayList<JButton> groupButtons = new ArrayList<>();
     private static GroupUI instance;
 
-    static DatagramSocket socket;
-
     public static GroupUI getInstance() {
         if (instance == null)
             instance = new GroupUI();
@@ -29,11 +27,12 @@ public class GroupUI extends JFrame implements ActionListener {
 
     public GroupUI() {
         try {
-            socket = new DatagramSocket(5555);
+            KidPaint.dSocket = new DatagramSocket(5555);
         } catch (SocketException e) {
             System.out.println("There is something wrong on building socket!");
             e.printStackTrace();
         }
+
 
         System.out.println("sfdf");
         sendMessage();
@@ -133,7 +132,7 @@ public class GroupUI extends JFrame implements ActionListener {
         byte[] b = new byte[1024];
         DatagramPacket packet = new DatagramPacket(b, 1024);
         try {
-            socket.receive(packet);
+            KidPaint.dSocket.receive(packet);
             String str = new String(packet.getData());
             if (str.charAt(0) == '#' && str.charAt(1) == '#') {
                 str = str.substring(2);
@@ -164,7 +163,7 @@ public class GroupUI extends JFrame implements ActionListener {
             InetAddress dest = InetAddress.getByName("255.255.255.255");
             int port = 5555;
             DatagramPacket packet = new DatagramPacket(msg, msg.length, dest, port);
-            socket.send(packet);
+            KidPaint.dSocket.send(packet);
             System.out.println("The message: " + "Find Studio" + " has been sent.");
         } catch (IOException e) {
             System.out.println("There is something wrong in broadcasting finding group message!");

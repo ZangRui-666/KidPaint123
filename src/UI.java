@@ -353,7 +353,7 @@ public class UI extends JFrame {
             int dstPort = packet.getPort();
             if (packet.getData().toString().equalsIgnoreCase("Find Studio")) {
                 DatagramPacket p = new DatagramPacket(message.getBytes(), message.length(), InetAddress.getByName(srcAddress), dstPort);
-                GroupUI.socket.send(p);
+                KidPaint.dSocket.send(p);
             }
         }
     }
