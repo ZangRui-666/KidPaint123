@@ -72,7 +72,7 @@ public class UI extends JFrame {
     private UI() {
         if (KidPaint.isServer) {
             try {
-                KidPaint.dSocket= new DatagramSocket(5555);
+                KidPaint.dSocket = new DatagramSocket(5555);
             } catch (SocketException e) {
                 e.printStackTrace();
             }
@@ -130,12 +130,14 @@ public class UI extends JFrame {
                 g2.fillRect(0, 0, this.getWidth(), this.getHeight());
 
                 // draw and fill circles with the specific colors stored in the data array
-                for (int x = 0; x < data.length; x++) {
-                    for (int y = 0; y < data[0].length; y++) {
-                        g2.setColor(new Color(data[x][y]));
-                        g2.fillArc(blockSize * x, blockSize * y, blockSize, blockSize, 0, 360);
-                        g2.setColor(Color.darkGray);
-                        g2.drawArc(blockSize * x, blockSize * y, blockSize, blockSize, 0, 360);
+                synchronized (data) {
+                    for (int x = 0; x < data.length; x++) {
+                        for (int y = 0; y < data[0].length; y++) {
+                            g2.setColor(new Color(data[x][y]));
+                            g2.fillArc(blockSize * x, blockSize * y, blockSize, blockSize, 0, 360);
+                            g2.setColor(Color.darkGray);
+                            g2.drawArc(blockSize * x, blockSize * y, blockSize, blockSize, 0, 360);
+                        }
                     }
                 }
             }
@@ -258,9 +260,9 @@ public class UI extends JFrame {
             System.out.println("The size of linkedList is" + dataList.size());
             int[][] array = dataList.getLast();
             System.out.println(Arrays.toString(array[0]));
-            if(dataList.size()>1){
-            dataList.removeLast();
-            updatePainting(dataList.getLast());
+            if (dataList.size() > 1) {
+                dataList.removeLast();
+                updatePainting(dataList.getLast());
             }
         });
 
@@ -401,7 +403,7 @@ public class UI extends JFrame {
                                 DataInputStream dos = new DataInputStream(socket.getInputStream());
                                 byte[] b = new byte[1024];
                                 dos.read(b, 0, len);
-                                String str = new String(b, 0, b.length);
+                                String str = new String(b, 0, len);
                                 int index = connectedClients.indexOf(socket);
                                 clientsNames.add(index, str);
                                 String msg = str + " has joined the studio";
@@ -434,9 +436,10 @@ public class UI extends JFrame {
         DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
         out.writeInt(10000);
         out.writeInt(223);
+        synchronized (data){
         for (int i = 0; i < 20; i++)
             for (int j = 0; j < 20; j++)
-                out.writeInt(data[i][j]);
+                out.writeInt(data[i][j]);}
     }
 
     public void clientSendName() {
@@ -451,11 +454,12 @@ public class UI extends JFrame {
 
     public void clientSend(byte[] data) {
         try {
-            DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
-            out.writeInt(data.length);
-            out.writeInt(100);
-            out.write(data);
-
+            synchronized (data) {
+                DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
+                out.writeInt(data.length);
+                out.writeInt(100);
+                out.write(data);
+            }
         } catch (IOException e) {
         }
 
@@ -466,7 +470,7 @@ public class UI extends JFrame {
         synchronized (connectedClients) {
             synchronized (dataList) {
                 System.out.println("serverSendData");
-                if(dataList.size()>MAX) {
+                if (dataList.size() > MAX) {
                     dataList.removeFirst();
                 }
                 dataList.addLast(this.data);
@@ -477,10 +481,11 @@ public class UI extends JFrame {
                             DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                             out.writeInt(10000);
                             out.writeInt(223);
-                            for (int i = 0; i < 20; i++)
-                                for (int j = 0; j < 20; j++)
-                                    out.writeInt(data[i][j]);
-
+                            synchronized (data) {
+                                for (int i = 0; i < 20; i++)
+                                    for (int j = 0; j < 20; j++)
+                                        out.writeInt(data[i][j]);
+                            }
                         } catch (IOException e) {
                         }
 
@@ -536,11 +541,12 @@ public class UI extends JFrame {
      * @param col, row - the position of the selected pixel
      */
     public void paintPixel(int col, int row) {
-        if (col >= data.length || row >= data[0].length) return;
+        synchronized (data) {
+            if (col >= data.length || row >= data[0].length) return;
 
-        if(data[col][row] == selectedColor)
-            return;
-
+            if (data[col][row] == selectedColor)
+                return;
+        }
         synchronized (data) {
             data[col][row] = selectedColor;
         }
@@ -613,9 +619,9 @@ public class UI extends JFrame {
      */
     public List paintArea(int col, int row) {
         LinkedList<Point> filledPixels = new LinkedList<>();
-
-        if (col >= data.length || row >= data[0].length) return filledPixels;
         synchronized (data) {
+        if (col >= data.length || row >= data[0].length) return filledPixels;
+
             int oriColor = data[col][row];
             LinkedList<Point> buffer = new LinkedList<>();
 

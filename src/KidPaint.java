@@ -7,10 +7,10 @@ import java.util.List;
 
 public class KidPaint {
 	static String name = "XiaoMing";
-	static String studioName = "" ;
+	static String studioName = "Raymond" ;
 	static String studioIP;
 	static String port;
-	static boolean isServer= false;
+	static boolean isServer= true;
 	static Socket socket;
 	static DatagramSocket dSocket;
 
