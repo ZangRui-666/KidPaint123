@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KidPaint {
-	static String name;
+	static String name = "xiaoming";
 	static String studioName = "";
 	static String studioIP;
 	static String port;
-	static boolean isServer= true;
+	static boolean isServer= false;
 	static Socket socket;
 	static DatagramSocket dSocket;
 
@@ -18,7 +18,11 @@ public class KidPaint {
 		LoginUI loginUI = LoginUI.getInstance();
 		loginUI.setVisible(true);
 
-		while (!LoginUI.isLogin){}
+		while (!LoginUI.isLogin){
+			try {
+				Thread.sleep(0);
+			} catch(Exception ex) {}
+		}
 		loginUI.setVisible(false);
 		name = loginUI.getName();
 

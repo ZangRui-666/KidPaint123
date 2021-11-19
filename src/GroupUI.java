@@ -44,6 +44,8 @@ public class GroupUI extends JFrame implements ActionListener {
         }
         KidPaint.dSocket.close();
 
+        System.out.println(studioNames);
+
         Container container = this.getContentPane();
         container.setLayout(new GridLayout(0, 1, 10, 10));
         container.setBackground(Color.white);
@@ -159,7 +161,7 @@ public class GroupUI extends JFrame implements ActionListener {
 
     private void sendMessage() {
         try {
-            byte[] msg = "Find Studio".getBytes();
+            byte[] msg = "abc".getBytes();
             InetAddress dest = InetAddress.getByName("255.255.255.255");
             int port = 5555;
             DatagramPacket packet = new DatagramPacket(msg, msg.length, dest, port);

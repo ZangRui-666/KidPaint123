@@ -94,7 +94,7 @@ public class UI extends JFrame {
         }
         setTitle("KidPaint");
 
-        //测试数据~
+
         clientsNames.add("test1");
         clientsNames.add("test2");
         clientsNames.add("test3");
