@@ -350,7 +350,7 @@ public class UI extends JFrame {
             DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
             KidPaint.dSocket.receive(packet);
             String srcAddress = packet.getAddress().toString();
-            String msg = new String(packet.getData());
+            String msg = new String(packet.getData(), 0, packet.getLength());
             System.out.println("Received a packet: " + msg);
             int dstPort = packet.getPort();
             System.out.println(msg.equals("Find Studio"));
@@ -397,7 +397,7 @@ public class UI extends JFrame {
                                 DataInputStream dos = new DataInputStream(socket.getInputStream());
                                 byte[] b = new byte[1024];
                                 dos.read(b, 0, len);
-                                String str = new String(b);
+                                String str = new String(b, 0, b.length);
                                 int index = connectedClients.indexOf(socket);
                                 clientsNames.add(index, str);
                                 String msg = str + " has joined the studio";
@@ -572,7 +572,7 @@ public class UI extends JFrame {
                 byte[] b = new byte[1024];
                 int len = dos.readInt();
                 dos.read(b, 0, len);
-                String str = new String(b);
+                String str = new String(b, 0, b.length);
                 clientsNames.add(str);
             }
         } catch (IOException e) {

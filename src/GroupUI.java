@@ -134,16 +134,20 @@ public class GroupUI extends JFrame implements ActionListener {
         byte[] b = new byte[1024];
         DatagramPacket packet = new DatagramPacket(b, 1024);
         try {
-            KidPaint.dSocket.receive(packet);
-            String str = new String(packet.getData());
-            if (str.charAt(0) == '#' && str.charAt(1) == '#') {
-                str = str.substring(2);
-                String[] splitStr = str.split(";;");
-                studioNames.add(splitStr[0]);
-                serverIP.add(splitStr[1]);
+            while (true) {
+                KidPaint.dSocket.receive(packet);
+
+                String str = new String(packet.getData(), 0, packet.getLength());
+                System.out.println("Received a packet: " + str);
+                if (str.charAt(0) == '#' && str.charAt(1) == '#') {
+                    str = str.substring(2);
+                    String[] splitStr = str.split(";;");
+                    studioNames.add(splitStr[0]);
+                    serverIP.add(packet.getAddress().toString().substring(1));
+                }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("nothing happened");
         }
     }
 
@@ -161,7 +165,7 @@ public class GroupUI extends JFrame implements ActionListener {
 
     private void sendMessage() {
         try {
-            byte[] msg = "abc".getBytes();
+            byte[] msg = "Find Studio".getBytes();
             InetAddress dest = InetAddress.getByName("255.255.255.255");
             int port = 5555;
             DatagramPacket packet = new DatagramPacket(msg, msg.length, dest, port);
