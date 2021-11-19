@@ -36,9 +36,9 @@ public class KidPaint {
 		groupUI.setVisible(false);
 
 		UI ui = UI.getInstance();// get the instance of UI
-		UI.dataList.addLast(new int[50][50]);
+		UI.dataList.addLast(new int[20][20]);
 
-		ui.setData(new int[50][50], 20);	// set the data array and block size. comment this statement to use the default data array and block size.
+		ui.setData(new int[20][20], 25);	// set the data array and block size. comment this statement to use the default data array and block size.
 		ui.setVisible(true);				// set the ui
 	}
 }

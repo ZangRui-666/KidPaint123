@@ -47,7 +47,7 @@ public class UI extends JFrame {
     private static UI instance;
     private int selectedColor = -543230;    //golden
 
-    int[][] data = new int[50][50];            // pixel color data array
+    int[][] data = new int[20][20];            // pixel color data array
     static LinkedList<int[][]> dataList = new LinkedList<>();
     static int MAX = 10;
 
@@ -71,6 +71,11 @@ public class UI extends JFrame {
      */
     private UI() {
         if (KidPaint.isServer) {
+            try {
+                KidPaint.dSocket= new DatagramSocket(5555);
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
             new Thread(() -> {
                 while (true) {
                     try {
@@ -377,9 +382,9 @@ public class UI extends JFrame {
                         serverSendData(buffer);
                     }
                 } else if (specifier == 223) {
-                    int[][] newData = new int[50][50];
-                    for (int i = 0; i < 50; i++)
-                        for (int j = 0; j < 50; j++)
+                    int[][] newData = new int[20][20];
+                    for (int i = 0; i < 20; i++)
+                        for (int j = 0; j < 20; j++)
                             newData[i][j] = in.readInt();
                     updatePainting(newData);
                     if (KidPaint.isServer) {
@@ -429,8 +434,8 @@ public class UI extends JFrame {
         DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
         out.writeInt(10000);
         out.writeInt(223);
-        for (int i = 0; i < 50; i++)
-            for (int j = 0; j < 50; j++)
+        for (int i = 0; i < 20; i++)
+            for (int j = 0; j < 20; j++)
                 out.writeInt(data[i][j]);
     }
 
@@ -472,8 +477,8 @@ public class UI extends JFrame {
                             DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                             out.writeInt(10000);
                             out.writeInt(223);
-                            for (int i = 0; i < 50; i++)
-                                for (int j = 0; j < 50; j++)
+                            for (int i = 0; i < 20; i++)
+                                for (int j = 0; j < 20; j++)
                                     out.writeInt(data[i][j]);
 
                         } catch (IOException e) {
