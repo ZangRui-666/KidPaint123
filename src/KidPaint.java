@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KidPaint {
-	static String name = "XiaoMing";
+	static String name = "Daming";
 	static String studioName = "Raymond" ;
 	static String studioIP;
 	static String port;
