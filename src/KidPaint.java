@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KidPaint {
-	static String name;
-	static String studioName = "";
+	static String name = "raymond";
+	static String studioName = "aoligei";
 	static String studioIP;
 	static String port;
 	static boolean isServer= true;
@@ -15,17 +15,17 @@ public class KidPaint {
 	static DatagramSocket dSocket;
 
 	public static void main(String[] args) {
-		LoginUI loginUI = LoginUI.getInstance();
-		loginUI.setVisible(true);
+		/*LoginUI loginUI = LoginUI.getInstance();
+		loginUI.setVisible(true);*/
 
-		while (!LoginUI.isLogin){}
+		/*while (!LoginUI.isLogin){}
 		loginUI.setVisible(false);
-		name = loginUI.getName();
+		name = loginUI.getName();*/
 
-		GroupUI groupUI = GroupUI.getInstance();
+		/*GroupUI groupUI = GroupUI.getInstance();
 		groupUI.setVisible(true);
 		while (studioName.equals("")){}
-		groupUI.setVisible(false);
+		groupUI.setVisible(false);*/
 
 		UI ui = UI.getInstance();// get the instance of UI
 		UI.dataList.addLast(new int[50][50]);

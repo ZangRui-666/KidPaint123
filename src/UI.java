@@ -350,10 +350,14 @@ public class UI extends JFrame {
             DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
             KidPaint.dSocket.receive(packet);
             String srcAddress = packet.getAddress().toString();
+            String msg = new String(packet.getData());
+            System.out.println("Received a packet: " + msg);
             int dstPort = packet.getPort();
-            if (packet.getData().toString().equalsIgnoreCase("Find Studio")) {
-                DatagramPacket p = new DatagramPacket(message.getBytes(), message.length(), InetAddress.getByName(srcAddress), dstPort);
+            System.out.println(msg.equals("Find Studio"));
+            if (msg.equals("Find Studio")) {
+                DatagramPacket p = new DatagramPacket(message.getBytes(), message.getBytes().length, InetAddress.getByName(srcAddress), dstPort);
                 KidPaint.dSocket.send(p);
+                System.out.println("Sent back a packet");
             }
         }
     }
