@@ -47,6 +47,9 @@ public class UI extends JFrame {
     private int selectedColor = -543230;    //golden
 
     int[][] data = new int[50][50];            // pixel color data array
+    LinkedList<int[][]> dataList = new LinkedList<>();
+    static int MAX = 10;
+
     int blockSize = 16;
     PaintMode paintMode = PaintMode.Pixel;
 
@@ -67,6 +70,7 @@ public class UI extends JFrame {
      */
     private UI() {
         if (KidPaint.isServer) {
+            dataList.addLast(data);
             new Thread(() -> {
                 while (true) {
                     try {
@@ -248,10 +252,11 @@ public class UI extends JFrame {
 
         revocationBt = new JButton("revocation");
         toolPanel.add(revocationBt);
-        revocationBt.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //撤销
+        revocationBt.addActionListener(e -> {
+            System.out.println("go back");
+            if(dataList.size()>1){
+            dataList.removeLast();
+            updatePainting(dataList.getLast());
             }
         });
 
@@ -414,6 +419,7 @@ public class UI extends JFrame {
     private void updatePainting(int[][] newData) {
         synchronized (data) {
             data = newData;
+            paintPanel.repaint();
         }
     }
 
@@ -447,25 +453,32 @@ public class UI extends JFrame {
         }
 
 
-
     }
 
     public void serverSendData() {
         synchronized (connectedClients) {
-            for (Socket clientSocket : connectedClients) {
-                new Thread(() -> {
-                    try {
-                        DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
-                        out.writeInt(10000);
-                        out.writeInt(223);
-                        for (int i = 0; i < 50; i++)
-                            for (int j = 0; j < 50; j++)
-                                out.writeInt(data[i][j]);
+            synchronized (dataList) {
+                System.out.println("serverSendData");
+                if(dataList.size()>MAX) {
+                    dataList.removeLast();
+                    dataList.addLast(data);
+                }else dataList.addLast(data);
+                System.out.println("Add data to dataList");
+                for (Socket clientSocket : connectedClients) {
+                    new Thread(() -> {
+                        try {
+                            DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+                            out.writeInt(10000);
+                            out.writeInt(223);
+                            for (int i = 0; i < 50; i++)
+                                for (int j = 0; j < 50; j++)
+                                    out.writeInt(data[i][j]);
 
-                    } catch (IOException e) {
-                    }
+                        } catch (IOException e) {
+                        }
 
-                }).start();
+                    }).start();
+                }
             }
         }
     }
