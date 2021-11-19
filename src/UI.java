@@ -70,7 +70,6 @@ public class UI extends JFrame {
      */
     private UI() {
         if (KidPaint.isServer) {
-            dataList.addLast(data);
             new Thread(() -> {
                 while (true) {
                     try {
@@ -230,13 +229,10 @@ public class UI extends JFrame {
         toolPanel.add(tglBucket);
 
         // change the paint mode to PIXEL mode
-        tglPen.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                tglPen.setSelected(true);
-                tglBucket.setSelected(false);
-                paintMode = PaintMode.Pixel;
-            }
+        tglPen.addActionListener(arg0 -> {
+            tglPen.setSelected(true);
+            tglBucket.setSelected(false);
+            paintMode = PaintMode.Pixel;
         });
 
         // change the paint mode to AREA mode
@@ -419,8 +415,8 @@ public class UI extends JFrame {
     private void updatePainting(int[][] newData) {
         synchronized (data) {
             data = newData;
-            paintPanel.repaint();
         }
+        paintPanel.repaint();
     }
 
     public void clientSend() throws IOException {
@@ -460,9 +456,9 @@ public class UI extends JFrame {
             synchronized (dataList) {
                 System.out.println("serverSendData");
                 if(dataList.size()>MAX) {
-                    dataList.removeLast();
-                    dataList.addLast(data);
-                }else dataList.addLast(data);
+                    dataList.removeFirst();
+                }
+                dataList.addLast(this.data);
                 System.out.println("Add data to dataList");
                 for (Socket clientSocket : connectedClients) {
                     new Thread(() -> {
@@ -531,9 +527,12 @@ public class UI extends JFrame {
     public void paintPixel(int col, int row) {
         if (col >= data.length || row >= data[0].length) return;
 
+        if(data[col][row] == selectedColor)
+            return;
         synchronized (data) {
             data[col][row] = selectedColor;
         }
+
         paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
         if (KidPaint.isServer)
             serverSendData();
@@ -652,5 +651,6 @@ public class UI extends JFrame {
         this.blockSize = blockSize;
         paintPanel.setPreferredSize(new Dimension(data.length * blockSize, data[0].length * blockSize));
         paintPanel.repaint();
+        dataList.addLast(data);
     }
 }
