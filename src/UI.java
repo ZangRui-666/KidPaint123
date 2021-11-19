@@ -93,9 +93,7 @@ public class UI extends JFrame {
                 }
             }).start();
         } else {
-            new Thread(() -> {
-                receiveData(KidPaint.socket);
-            }).start();
+            new Thread(() -> receiveData(KidPaint.socket)).start();
         }
         setTitle("KidPaint");
 
@@ -473,25 +471,26 @@ public class UI extends JFrame {
                 if (dataList.size() > MAX) {
                     dataList.removeFirst();
                 }
-                dataList.addLast(this.data);
+                dataList.addLast(this.data);}
                 System.out.println("Add data to dataList");
                 for (Socket clientSocket : connectedClients) {
                     new Thread(() -> {
                         try {
                             DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
-                            out.writeInt(10000);
+                            out.writeInt(1600);
                             out.writeInt(223);
                             synchronized (data) {
                                 for (int i = 0; i < 20; i++)
                                     for (int j = 0; j < 20; j++)
                                         out.writeInt(data[i][j]);
                             }
+                            System.out.println("sent over");
                         } catch (IOException e) {
                         }
 
                     }).start();
                 }
-            }
+
         }
     }
 
