@@ -15,10 +15,7 @@ import java.awt.event.MouseMotionListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -344,9 +341,10 @@ public class UI extends JFrame {
     //for server use
     public void receiveAndNotify() throws IOException {
         message = "##" + KidPaint.name + ";;" + "2345";
+        KidPaint.dSocket = new DatagramSocket(5555);
         while (true) {
             DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
-            GroupUI.socket.receive(packet);
+            KidPaint.dSocket.receive(packet);
             String srcAddress = packet.getAddress().toString();
             int dstPort = packet.getPort();
             if (packet.getData().toString().equalsIgnoreCase("Find Studio")) {
@@ -447,10 +445,7 @@ public class UI extends JFrame {
 
         } catch (IOException e) {
         }
-        try {
-            KidPaint.socket.close();
-        } catch (IOException e) {
-        }
+
 
 
     }

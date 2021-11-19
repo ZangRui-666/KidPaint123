@@ -1,3 +1,4 @@
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -9,11 +10,12 @@ public class KidPaint {
 	static String studioName = "";
 	static String studioIP;
 	static String port;
-	static boolean isServer;
+	static boolean isServer= true;
 	static Socket socket;
+	static DatagramSocket dSocket;
 
 	public static void main(String[] args) {
-		LoginUI loginUI = LoginUI.getInstance();
+		/*LoginUI loginUI = LoginUI.getInstance();
 		loginUI.setVisible(true);
 
 		while (!LoginUI.isLogin){}
@@ -23,7 +25,7 @@ public class KidPaint {
 		GroupUI groupUI = GroupUI.getInstance();
 		groupUI.setVisible(true);
 		while (studioName.equals("")){}
-		groupUI.setVisible(false);
+		groupUI.setVisible(false);*/
 
 		UI ui = UI.getInstance();			// get the instance of UI
 		ui.setData(new int[50][50], 20);	// set the data array and block size. comment this statement to use the default data array and block size.
