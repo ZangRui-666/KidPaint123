@@ -57,9 +57,9 @@ public class LoginUI extends JFrame implements ActionListener {
         licenceJLabel = new JLabel("Enter your licence number(default: 123456): ");
         licenceJLabel.setBounds(150, 100, 300, 30);
         nameJTextField = new JTextField();
-        nameJTextField.setBounds(400, 50, 200, 30);
+        nameJTextField.setBounds(450, 50, 200, 30);
         licenceField = new JPasswordField();
-        licenceField.setBounds(400, 100, 200, 30);
+        licenceField.setBounds(450, 100, 200, 30);
 
         loginJPane = new JPanel();
         loginJPane.setBackground(Color.white);
