@@ -391,9 +391,7 @@ public class UI extends JFrame {
                     if (KidPaint.isServer) {
                         String name = clientsNames.get(connectedClients.indexOf(socket));
                         serverSendData();
-                        String msg = name + "has made a change";
-                        onTextInputted(msg);
-                        serverSendData(msg.getBytes());
+
                     }
                 } else if (specifier == 236) {
                     if (KidPaint.isServer) {
@@ -467,6 +465,9 @@ public class UI extends JFrame {
     public void serverSendData() {
         synchronized (connectedClients) {
             synchronized (dataList) {
+                String msg = KidPaint.name + "has made a change";
+                onTextInputted(msg);
+                serverSendData(msg.getBytes());
                 System.out.println("serverSendData");
                 if (dataList.size() > MAX) {
                     dataList.removeFirst();
@@ -565,30 +566,6 @@ public class UI extends JFrame {
 
     public void serve(Socket clientSocket) {
         receiveData(clientSocket);
-    }
-
-    public void askClientForName(Socket socket) {
-        try {
-            DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-            dos.writeInt(4);
-            dos.writeInt(336);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            synchronized (clientsNames) {
-                DataInputStream dos = new DataInputStream(socket.getInputStream());
-                byte[] b = new byte[1024];
-                int len = dos.readInt();
-                dos.read(b, 0, len);
-                String str = new String(b, 0, b.length);
-                clientsNames.add(str);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
     }
 
     public void server() throws IOException {
