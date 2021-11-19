@@ -35,12 +35,13 @@ public class GroupUI extends JFrame implements ActionListener {
             e.printStackTrace();
         }
 
+        System.out.println("sfdf");
         sendMessage();
         long timer = System.currentTimeMillis();
         Thread thread = new Thread(() -> receiveMessage(socket));
         thread.start();
 
-        while (System.currentTimeMillis() - timer < 1500) {
+        while (System.currentTimeMillis() - timer < 150) {
         }
         socket.close();
 
@@ -104,7 +105,6 @@ public class GroupUI extends JFrame implements ActionListener {
         this.setSize(800, 600);
         this.setLocation(100, 100);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setVisible(true);
     }
 
 
@@ -118,7 +118,7 @@ public class GroupUI extends JFrame implements ActionListener {
             KidPaint.isServer = true;
             System.out.println("create new group name: " + KidPaint.studioName);
         }
-        for (int i = 0; i < groupButtons.size(); i++) {
+        for (int i = 0; i < groupButtons.size(); i++)
             if (e.getSource() == groupButtons.get(i)) {
                 KidPaint.isServer = false;
                 KidPaint.studioName = studioNames.get(i);
@@ -126,7 +126,6 @@ public class GroupUI extends JFrame implements ActionListener {
                 System.out.println("join in group name: " + KidPaint.studioName);
                 break;
             }
-        }
     }
 
 

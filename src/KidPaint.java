@@ -6,7 +6,7 @@ import java.util.List;
 
 public class KidPaint {
 	static String name;
-	static String studioName;
+	static String studioName = "";
 	static String studioIP;
 	static String port;
 	static boolean isServer;
@@ -22,7 +22,7 @@ public class KidPaint {
 
 		GroupUI groupUI = GroupUI.getInstance();
 		groupUI.setVisible(true);
-		while (studioName==null){}
+		while (studioName==""){}
 		groupUI.setVisible(false);
 
 		UI ui = UI.getInstance();			// get the instance of UI
