@@ -38,12 +38,12 @@ public class GroupUI extends JFrame implements ActionListener {
         System.out.println("sfdf");
         sendMessage();
         long timer = System.currentTimeMillis();
-        Thread thread = new Thread(() -> receiveMessage(socket));
+        Thread thread = new Thread(() -> receiveMessage(KidPaint.dSocket));
         thread.start();
 
-        while (System.currentTimeMillis() - timer < 150) {
+        while (System.currentTimeMillis() - timer < 1500) {
         }
-        socket.close();
+        KidPaint.dSocket.close();
 
         Container container = this.getContentPane();
         container.setLayout(new GridLayout(0, 1, 10, 10));
