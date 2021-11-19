@@ -17,6 +17,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.awt.FlowLayout;
@@ -47,7 +48,7 @@ public class UI extends JFrame {
     private int selectedColor = -543230;    //golden
 
     int[][] data = new int[50][50];            // pixel color data array
-    LinkedList<int[][]> dataList = new LinkedList<>();
+    static LinkedList<int[][]> dataList = new LinkedList<>();
     static int MAX = 10;
 
     int blockSize = 16;
@@ -249,7 +250,9 @@ public class UI extends JFrame {
         revocationBt = new JButton("revocation");
         toolPanel.add(revocationBt);
         revocationBt.addActionListener(e -> {
-            System.out.println("go back");
+            System.out.println("The size of linkedList is" + dataList.size());
+            int[][] array = dataList.getLast();
+            System.out.println(Arrays.toString(array[0]));
             if(dataList.size()>1){
             dataList.removeLast();
             updatePainting(dataList.getLast());
@@ -529,6 +532,7 @@ public class UI extends JFrame {
 
         if(data[col][row] == selectedColor)
             return;
+
         synchronized (data) {
             data[col][row] = selectedColor;
         }
@@ -651,6 +655,5 @@ public class UI extends JFrame {
         this.blockSize = blockSize;
         paintPanel.setPreferredSize(new Dimension(data.length * blockSize, data[0].length * blockSize));
         paintPanel.repaint();
-        dataList.addLast(data);
     }
 }
