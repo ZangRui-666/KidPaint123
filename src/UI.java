@@ -162,13 +162,15 @@ public class UI extends JFrame {
             @Override
             public void mouseReleased(MouseEvent e) {
                 boolean isChanged = false;
+                int column = e.getX()/blockSize;
+                int row = e.getY()/blockSize;
                 if (paintMode == PaintMode.Area && e.getX() >= 0 && e.getY() >= 0)
-                    isChanged = paintArea(e.getX() / blockSize, e.getY() / blockSize, selectedColor);
+                    isChanged = paintArea(column, row, selectedColor);
                 if (!isChanged) return;
                 if (KidPaint.isServer)
-                    serverSendData(KidPaint.name);
+                    serverSendData(row, column, selectedColor,150);
                 else
-                    clientSend();
+                    clientSend(row,column,selectedColor,150);
             }
         });
 
