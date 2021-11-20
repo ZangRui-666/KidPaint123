@@ -12,14 +12,10 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -163,9 +159,9 @@ public class UI extends JFrame {
             public void mouseReleased(MouseEvent e) {
                 boolean isChanged = false;
                 if (paintMode == PaintMode.Area && e.getX() >= 0 && e.getY() >= 0)
-                    isChanged = paintArea(e.getX() / blockSize, e.getY() / blockSize, selectedColor);
-                if (!isChanged) return;
-                if (KidPaint.isServer)
+                    isChanged = paintArea(e.getX() / blockSize, e.getY() / blockSize);
+                if(!isChanged) return;
+                if(KidPaint.isServer)
                     serverSendData(KidPaint.name);
                 else
                     clientSend();
@@ -176,22 +172,19 @@ public class UI extends JFrame {
 
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0) {
+                if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0){
                     int column = e.getX() / blockSize;
                     int row = e.getY() / blockSize;
-                    if (data[column][row] != selectedColor) {
+                    if (data[column][row] != selectedColor){
 
-                        paintPixel(column, row, selectedColor);
-                        if (KidPaint.isServer)
-                            //serverSendData(KidPaint.name);
-                            serverSendData(row, column, selectedColor, 135);
+                    paintPixel(column, row, selectedColor);
+                    if(KidPaint.isServer)
+                        serverSendData(KidPaint.name);
+                    else
+                        clientSend();
+                }}
 
-                        else
-                            clientSend(row, column, selectedColor, 135);
-                    }
                 }
-
-            }
 
 
             @Override
@@ -207,6 +200,7 @@ public class UI extends JFrame {
         basePanel.add(scrollPaneLeft, BorderLayout.CENTER);
 
         JPanel toolPanel = new JPanel();
+        toolPanel.setPreferredSize(new Dimension(600, 100));
         basePanel.add(toolPanel, BorderLayout.NORTH);
         toolPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
@@ -289,52 +283,103 @@ public class UI extends JFrame {
         toolPanel.add(saveBt);
         saveBt.addActionListener(e -> {
             //save action
+            //get date
+            Date date = new Date();
+            SimpleDateFormat dateFormat= new SimpleDateFormat("yyMMdd");
+            System.out.println(dateFormat.format(date));
+
+            String filename = "kidPaint_" + dateFormat.format(date) + ".dat";
+            File savedFile = new File(filename);
+            try {
+                DataOutputStream out = new DataOutputStream(new FileOutputStream(savedFile));
+                for(int i = 0; i < data.length; i++){
+                    for(int j = 0; j < data[0].length; j++){
+                        out.writeInt(data[i][j]);
+                    }
+                }
+                out.close();
+            } catch (FileNotFoundException ex) {
+                System.out.println("the file is no found");
+                //ex.printStackTrace();
+            } catch (IOException ioException) {
+                System.out.println("there is an IO exception!");
+                //ioException.printStackTrace();
+            }
         });
 
         //load button
         JButton loadBt = new JButton("load (input filename)");
         JTextField loadFileText = new JTextField();
-
+        loadFileText.setPreferredSize(new Dimension(150, 30));
         toolPanel.add(loadBt);
         toolPanel.add(loadFileText);
         loadBt.addActionListener(e -> {
             //load action
+            if(loadFileText.equals("")) return;
+            File inputFile = new File(loadFileText.getText());
+            if(!inputFile.exists()){
+                System.out.println("The file is not exist!");
+                return;
+            }
+            try {
+                DataInputStream in = new DataInputStream(new FileInputStream(inputFile));
+                int[][] inputDataArray = new int[data.length][data[0].length];
+                for(int i = 0; i < data.length; i++){
+                    for(int j = 0; j < data[0].length; j++){
+                        inputDataArray[i][j] = in.readInt();
+                    }
+                }
+                updatePainting(inputDataArray);
+                in.close();
+                if(KidPaint.isServer) serverSendData(KidPaint.name);
+                else clientSend();
+            } catch (FileNotFoundException ex) {
+                System.out.println("The file is not exist!");
+                ex.printStackTrace();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
         });
 
 
+
+        toolPanel.setBackground(Color.white);
         JPanel manageGroupJP = new JPanel();
         manageGroupJP.setLayout(new FlowLayout());
 
-        String[] memberStrArray = new String[clientsNames.size()];
-        for (int i = 0; i < clientsNames.size(); i++)
-            memberStrArray[i] = " " + clientsNames.get(i);
-        JList<String> listView = new JList<>(memberStrArray);
-        JScrollPane sp = new JScrollPane(listView, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        sp.setPreferredSize(new Dimension(100, 25));
+        if(KidPaint.isServer) {
+            String[] memberStrArray = new String[clientsNames.size()];
+            for (int i = 0; i < clientsNames.size(); i++)
+                memberStrArray[i] = " " + clientsNames.get(i);
+            JList<String> listView = new JList<>(memberStrArray);
+            JScrollPane sp = new JScrollPane(listView, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            sp.setPreferredSize(new Dimension(100, 25));
 
-        JButton btn = new JButton("Delete");
-        manageGroupJP.add(sp);
-        manageGroupJP.add(btn);
+            JButton btn = new JButton("Delete");
+            manageGroupJP.add(sp);
+            manageGroupJP.add(btn);
+            manageGroupJP.setBackground(Color.white);
 
-        toolPanel.add(manageGroupJP);
-        btn.addActionListener(e -> {
-            synchronized (clientsNames) {
-                synchronized (connectedClients) {
-                    int index = clientsNames.indexOf(listView.getSelectedValue());
-                    try {
-                        connectedClients.get(index).close();
-                        connectedClients.remove(index);
-                        clientsNames.remove(index);
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
+            toolPanel.add(manageGroupJP);
+            btn.addActionListener(e -> {
+                synchronized (clientsNames) {
+                    synchronized (connectedClients) {
+                        int index = clientsNames.indexOf(listView.getSelectedValue());
+                        try {
+                            connectedClients.get(index).close();
+                            connectedClients.remove(index);
+                            clientsNames.remove(index);
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+
                     }
-
                 }
-            }
 
-            System.out.println(listView.getSelectedValue().trim());
-            System.out.println("the size of the listView" + memberStrArray.length);
-        });
+                System.out.println(listView.getSelectedValue().trim());
+                System.out.println("the size of the listView" + memberStrArray.length);
+            });
+        }
 
         JPanel msgPanel = new JPanel();
 
@@ -382,7 +427,7 @@ public class UI extends JFrame {
         scrollPaneRight.setPreferredSize(new Dimension(300, this.getHeight()));
         msgPanel.add(scrollPaneRight, BorderLayout.CENTER);
 
-        this.setSize(new Dimension(800, 600));
+        this.setSize(new Dimension(800, 700));
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
@@ -446,21 +491,16 @@ public class UI extends JFrame {
                                 onTextInputted(msg);
                             }
                         }
-                    } else if (specifier == 135 || specifier == 150) {
+                    }
+                    else if(specifier == 135){
                         int row = in.readInt();
                         int column = in.readInt();
                         int color = in.readInt();
-                        if(specifier==135)
-                          paintPixel(row, column, color);
-                        if(specifier==150)
-                            paintArea(column,row,color);
-                        if (KidPaint.isServer) {
-                            String name = clientsNames.get(connectedClients.indexOf(socket));
-                            serverSendData(row, column, color, specifier);
+                        if(KidPaint.isServer){
+                            paintPixel(row, column, color);
                         }
 
                     }
-
                 }
             }
         } catch (IOException e) {
@@ -498,12 +538,12 @@ public class UI extends JFrame {
 
     }
 
-    public void clientSend(int row, int column, int color, int judge) {
+    public void clientSend(int row, int column, int color) {
         try {
             DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
             System.out.println("clientSendMessage" + row + ", " + column + ", " + ", " + color);
             out.writeInt(data.length);
-            out.writeInt(judge);
+            out.writeInt(135);
             out.writeInt(row);
             out.writeInt(column);
             out.writeInt(color);
@@ -587,7 +627,7 @@ public class UI extends JFrame {
         }
     }
 
-    public void serverSendData(int row, int column, int color, int judge) {
+    public void serverSendData(int row, int column, int color) {
         synchronized (connectedClients) {
             for (Socket clientSocket : connectedClients) {
                 new Thread(() -> {
@@ -595,7 +635,7 @@ public class UI extends JFrame {
                         DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                         System.out.println("serverSendMessage" + row + ", " + column + ", " + ", " + color);
                         out.writeInt(data.length);
-                        out.writeInt(judge);
+                        out.writeInt(135);
                         out.writeInt(row);
                         out.writeInt(column);
                         out.writeInt(color);
@@ -680,7 +720,7 @@ public class UI extends JFrame {
      * @param col, row - the position of the selected pixel
      * @return a list of modified pixels
      */
-    public boolean paintArea(int col, int row, int color) {
+    public boolean paintArea(int col, int row) {
         LinkedList<Point> filledPixels = new LinkedList<>();
         boolean signal = false;
         synchronized (data) {
@@ -689,9 +729,9 @@ public class UI extends JFrame {
             int oriColor = data[col][row];
             LinkedList<Point> buffer = new LinkedList<>();
 
-            if (oriColor != color) {
+            if (oriColor != selectedColor) {
                 buffer.add(new Point(col, row));
-                signal = true;
+                signal=true;
 
                 while (!buffer.isEmpty()) {
                     Point p = buffer.removeFirst();
@@ -700,7 +740,7 @@ public class UI extends JFrame {
 
                     if (data[x][y] != oriColor) continue;
 
-                    data[x][y] = color;
+                    data[x][y] = selectedColor;
                     filledPixels.add(p);
 
                     if (x > 0 && data[x - 1][y] == oriColor) buffer.add(new Point(x - 1, y));
