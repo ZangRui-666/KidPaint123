@@ -163,9 +163,9 @@ public class UI extends JFrame {
             public void mouseReleased(MouseEvent e) {
                 boolean isChanged = false;
                 if (paintMode == PaintMode.Area && e.getX() >= 0 && e.getY() >= 0)
-                    isChanged = paintArea(e.getX() / blockSize, e.getY() / blockSize);
-                if(!isChanged) return;
-                if(KidPaint.isServer)
+                    isChanged = paintArea(e.getX() / blockSize, e.getY() / blockSize, selectedColor);
+                if (!isChanged) return;
+                if (KidPaint.isServer)
                     serverSendData(KidPaint.name);
                 else
                     clientSend();
@@ -176,19 +176,22 @@ public class UI extends JFrame {
 
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0){
+                if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0) {
                     int column = e.getX() / blockSize;
                     int row = e.getY() / blockSize;
-                    if (data[column][row] != selectedColor){
+                    if (data[column][row] != selectedColor) {
 
-                    paintPixel(column, row, selectedColor);
-                    if(KidPaint.isServer)
-                        serverSendData(KidPaint.name);
-                    else
-                        clientSend();
-                }}
+                        paintPixel(column, row, selectedColor);
+                        if (KidPaint.isServer)
+                            //serverSendData(KidPaint.name);
+                            serverSendData(row, column, selectedColor, 135);
 
+                        else
+                            clientSend(row, column, selectedColor, 135);
+                    }
                 }
+
+            }
 
 
             @Override
@@ -297,8 +300,6 @@ public class UI extends JFrame {
         loadBt.addActionListener(e -> {
             //load action
         });
-
-
 
 
         JPanel manageGroupJP = new JPanel();
@@ -445,16 +446,21 @@ public class UI extends JFrame {
                                 onTextInputted(msg);
                             }
                         }
-                    }
-                    else if(specifier == 135){
+                    } else if (specifier == 135 || specifier == 150) {
                         int row = in.readInt();
                         int column = in.readInt();
                         int color = in.readInt();
-                        if(KidPaint.isServer){
-                            paintPixel(row, column, color);
+                        if(specifier==135)
+                          paintPixel(row, column, color);
+                        if(specifier==150)
+                            paintArea(column,row,color);
+                        if (KidPaint.isServer) {
+                            String name = clientsNames.get(connectedClients.indexOf(socket));
+                            serverSendData(row, column, color, specifier);
                         }
 
                     }
+
                 }
             }
         } catch (IOException e) {
@@ -492,12 +498,12 @@ public class UI extends JFrame {
 
     }
 
-    public void clientSend(int row, int column, int color) {
+    public void clientSend(int row, int column, int color, int judge) {
         try {
             DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
             System.out.println("clientSendMessage" + row + ", " + column + ", " + ", " + color);
             out.writeInt(data.length);
-            out.writeInt(135);
+            out.writeInt(judge);
             out.writeInt(row);
             out.writeInt(column);
             out.writeInt(color);
@@ -581,7 +587,7 @@ public class UI extends JFrame {
         }
     }
 
-    public void serverSendData(int row, int column, int color) {
+    public void serverSendData(int row, int column, int color, int judge) {
         synchronized (connectedClients) {
             for (Socket clientSocket : connectedClients) {
                 new Thread(() -> {
@@ -589,7 +595,7 @@ public class UI extends JFrame {
                         DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                         System.out.println("serverSendMessage" + row + ", " + column + ", " + ", " + color);
                         out.writeInt(data.length);
-                        out.writeInt(135);
+                        out.writeInt(judge);
                         out.writeInt(row);
                         out.writeInt(column);
                         out.writeInt(color);
@@ -674,7 +680,7 @@ public class UI extends JFrame {
      * @param col, row - the position of the selected pixel
      * @return a list of modified pixels
      */
-    public boolean paintArea(int col, int row) {
+    public boolean paintArea(int col, int row, int color) {
         LinkedList<Point> filledPixels = new LinkedList<>();
         boolean signal = false;
         synchronized (data) {
@@ -683,9 +689,9 @@ public class UI extends JFrame {
             int oriColor = data[col][row];
             LinkedList<Point> buffer = new LinkedList<>();
 
-            if (oriColor != selectedColor) {
+            if (oriColor != color) {
                 buffer.add(new Point(col, row));
-                signal=true;
+                signal = true;
 
                 while (!buffer.isEmpty()) {
                     Point p = buffer.removeFirst();
@@ -694,7 +700,7 @@ public class UI extends JFrame {
 
                     if (data[x][y] != oriColor) continue;
 
-                    data[x][y] = selectedColor;
+                    data[x][y] = color;
                     filledPixels.add(p);
 
                     if (x > 0 && data[x - 1][y] == oriColor) buffer.add(new Point(x - 1, y));
