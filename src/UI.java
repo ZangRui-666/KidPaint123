@@ -158,13 +158,17 @@ public class UI extends JFrame {
             @Override
             public void mouseReleased(MouseEvent e) {
                 boolean isChanged = false;
+                int column = e.getX() / blockSize;
+                int row = e.getY() / blockSize;
                 if (paintMode == PaintMode.Area && e.getX() >= 0 && e.getY() >= 0)
-                    isChanged = paintArea(e.getX() / blockSize, e.getY() / blockSize);
-                if(!isChanged) return;
-                if(KidPaint.isServer)
-                    serverSendData(KidPaint.name);
+                    isChanged = paintArea(column, row,selectedColor);
+                if (!isChanged) return;
+
+                if (KidPaint.isServer)
+                    //serverSendData(KidPaint.name);
+                    serverSendData(row, column, selectedColor, 150);
                 else
-                    clientSend();
+                    clientSend(row, column, selectedColor, 150);
             }
         });
 
@@ -172,17 +176,19 @@ public class UI extends JFrame {
 
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0){
+                if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0) {
                     int column = e.getX() / blockSize;
                     int row = e.getY() / blockSize;
-                    if (data[column][row] != selectedColor){
+                    if (data[column][row] != selectedColor) {
 
                         paintPixel(column, row, selectedColor);
-                        if(KidPaint.isServer)
-                            serverSendData(KidPaint.name);
+                        if (KidPaint.isServer)
+                            //serverSendData(KidPaint.name);
+                            serverSendData(row, column, selectedColor, 135);
                         else
-                            clientSend();
-                    }}
+                            clientSend(row, column, selectedColor, 135);
+                    }
+                }
 
             }
 
@@ -285,15 +291,15 @@ public class UI extends JFrame {
             //save action
             //get date
             Date date = new Date();
-            SimpleDateFormat dateFormat= new SimpleDateFormat("yyMMdd");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMdd");
             System.out.println(dateFormat.format(date));
 
             String filename = "kidPaint_" + dateFormat.format(date) + ".dat";
             File savedFile = new File(filename);
             try {
                 DataOutputStream out = new DataOutputStream(new FileOutputStream(savedFile));
-                for(int i = 0; i < data.length; i++){
-                    for(int j = 0; j < data[0].length; j++){
+                for (int i = 0; i < data.length; i++) {
+                    for (int j = 0; j < data[0].length; j++) {
                         out.writeInt(data[i][j]);
                     }
                 }
@@ -315,23 +321,23 @@ public class UI extends JFrame {
         toolPanel.add(loadFileText);
         loadBt.addActionListener(e -> {
             //load action
-            if(loadFileText.equals("")) return;
+            if (loadFileText.equals("")) return;
             File inputFile = new File(loadFileText.getText());
-            if(!inputFile.exists()){
+            if (!inputFile.exists()) {
                 System.out.println("The file is not exist!");
                 return;
             }
             try {
                 DataInputStream in = new DataInputStream(new FileInputStream(inputFile));
                 int[][] inputDataArray = new int[data.length][data[0].length];
-                for(int i = 0; i < data.length; i++){
-                    for(int j = 0; j < data[0].length; j++){
+                for (int i = 0; i < data.length; i++) {
+                    for (int j = 0; j < data[0].length; j++) {
                         inputDataArray[i][j] = in.readInt();
                     }
                 }
                 updatePainting(inputDataArray);
                 in.close();
-                if(KidPaint.isServer) serverSendData(KidPaint.name);
+                if (KidPaint.isServer) serverSendData(KidPaint.name);
                 else clientSend();
             } catch (FileNotFoundException ex) {
                 System.out.println("The file is not exist!");
@@ -342,12 +348,11 @@ public class UI extends JFrame {
         });
 
 
-
         toolPanel.setBackground(Color.white);
         JPanel manageGroupJP = new JPanel();
         manageGroupJP.setLayout(new FlowLayout());
 
-        if(KidPaint.isServer) {
+        if (KidPaint.isServer) {
             String[] memberStrArray = new String[clientsNames.size()];
             for (int i = 0; i < clientsNames.size(); i++)
                 memberStrArray[i] = " " + clientsNames.get(i);
@@ -491,13 +496,18 @@ public class UI extends JFrame {
                                 onTextInputted(msg);
                             }
                         }
-                    }
-                    else if(specifier == 135){
+                    } else if (specifier == 135 || specifier == 150) {
                         int row = in.readInt();
                         int column = in.readInt();
                         int color = in.readInt();
-                        if(KidPaint.isServer){
+                        if(specifier == 135){
                             paintPixel(row, column, color);
+                        if (KidPaint.isServer)
+                            serverSendData(row, column, color,135);
+                        }
+                        if(specifier == 150){
+                            paintArea(row,column,color);
+                            serverSendData(row,column,color,150);
                         }
 
                     }
@@ -538,12 +548,12 @@ public class UI extends JFrame {
 
     }
 
-    public void clientSend(int row, int column, int color) {
+    public void clientSend(int row, int column, int color, int specifier) {
         try {
             DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
             System.out.println("clientSendMessage" + row + ", " + column + ", " + ", " + color);
             out.writeInt(data.length);
-            out.writeInt(135);
+            out.writeInt(specifier);
             out.writeInt(row);
             out.writeInt(column);
             out.writeInt(color);
@@ -627,7 +637,7 @@ public class UI extends JFrame {
         }
     }
 
-    public void serverSendData(int row, int column, int color) {
+    public void serverSendData(int row, int column, int color, int specifier) {
         synchronized (connectedClients) {
             for (Socket clientSocket : connectedClients) {
                 new Thread(() -> {
@@ -635,7 +645,7 @@ public class UI extends JFrame {
                         DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                         System.out.println("serverSendMessage" + row + ", " + column + ", " + ", " + color);
                         out.writeInt(data.length);
-                        out.writeInt(135);
+                        out.writeInt(specifier);
                         out.writeInt(row);
                         out.writeInt(column);
                         out.writeInt(color);
@@ -720,7 +730,7 @@ public class UI extends JFrame {
      * @param col, row - the position of the selected pixel
      * @return a list of modified pixels
      */
-    public boolean paintArea(int col, int row) {
+    public boolean paintArea(int col, int row, int color) {
         LinkedList<Point> filledPixels = new LinkedList<>();
         boolean signal = false;
         synchronized (data) {
@@ -729,9 +739,9 @@ public class UI extends JFrame {
             int oriColor = data[col][row];
             LinkedList<Point> buffer = new LinkedList<>();
 
-            if (oriColor != selectedColor) {
+            if (oriColor != color) {
                 buffer.add(new Point(col, row));
-                signal=true;
+                signal = true;
 
                 while (!buffer.isEmpty()) {
                     Point p = buffer.removeFirst();
@@ -740,7 +750,7 @@ public class UI extends JFrame {
 
                     if (data[x][y] != oriColor) continue;
 
-                    data[x][y] = selectedColor;
+                    data[x][y] = color;
                     filledPixels.add(p);
 
                     if (x > 0 && data[x - 1][y] == oriColor) buffer.add(new Point(x - 1, y));
