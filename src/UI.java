@@ -390,7 +390,7 @@ public class UI extends JFrame {
                     updatePainting(newData);
                     if (KidPaint.isServer) {
                         String name = clientsNames.get(connectedClients.indexOf(socket));
-                        serverSendData();
+                        serverSendData(name);
 
                     }
                 } else if (specifier == 236) {
@@ -462,10 +462,10 @@ public class UI extends JFrame {
 
     }
 
-    public void serverSendData() {
+    public void serverSendData(String name) {
         synchronized (connectedClients) {
             synchronized (dataList) {
-                String msg = KidPaint.name + "has made a change";
+                String msg = name + "has made a change";
                 onTextInputted(msg);
                 serverSendData(msg.getBytes());
                 System.out.println("serverSendData");
@@ -485,7 +485,6 @@ public class UI extends JFrame {
                                     for (int j = 0; j < 20; j++)
                                         out.writeInt(data[i][j]);
                             }
-                            System.out.println("sent over");
                         } catch (IOException e) {
                         }
 
@@ -554,7 +553,7 @@ public class UI extends JFrame {
 
         paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
         if (KidPaint.isServer)
-            serverSendData();
+            serverSendData(KidPaint.name);
         else {
             try {
                 clientSend();
@@ -622,7 +621,7 @@ public class UI extends JFrame {
                 }
             }
             if (KidPaint.isServer)
-                serverSendData();
+                serverSendData(KidPaint.name);
             else {
                 try {
                     clientSend();
