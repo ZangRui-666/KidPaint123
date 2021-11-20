@@ -7,7 +7,7 @@ import java.util.List;
 
 public class KidPaint {
 	static String name = "Daming";
-	static String studioName = "Raymond" ;
+	static String studioName = "Ro" ;
 	static String studioIP;
 	static String port;
 	static boolean isServer= true;
