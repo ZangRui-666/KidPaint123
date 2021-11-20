@@ -463,12 +463,12 @@ public class UI extends JFrame {
     }
 
     public void serverSendData(String name) {
+        String msg = name + "has made a change";
+        onTextInputted(msg);
+        serverSendData(msg.getBytes());
         synchronized (connectedClients) {
             synchronized (dataList) {
-                String msg = name + "has made a change";
-                onTextInputted(msg);
-                serverSendData(msg.getBytes());
-                System.out.println("serverSendData");
+                System.out.println("serverSendArray");
                 if (dataList.size() > MAX) {
                     dataList.removeFirst();
                 }
@@ -500,7 +500,7 @@ public class UI extends JFrame {
                 new Thread(() -> {
                     try {
                         DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
-                        System.out.println("serverSendData" + new String(data));
+                        System.out.println("serverSendMessage" + new String(data) + data.length);
                         out.writeInt(data.length);
                         out.writeInt(100);
                         out.write(data,0,data.length);
