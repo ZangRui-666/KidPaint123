@@ -576,9 +576,9 @@ public class UI extends JFrame {
     }
 
     public void serverSendData(String name) {
-        String msg = name + "has made a change";
+        /*String msg = name + "has made a change";
         onTextInputted(msg);
-        serverSendData(msg.getBytes());
+        serverSendData(msg.getBytes());*/
         synchronized (connectedClients) {
             synchronized (dataList) {
                 System.out.println("serverSendArray");
