@@ -163,6 +163,10 @@ public class UI extends JFrame {
             public void mouseReleased(MouseEvent e) {
                 if (paintMode == PaintMode.Area && e.getX() >= 0 && e.getY() >= 0)
                     paintArea(e.getX() / blockSize, e.getY() / blockSize);
+                if(KidPaint.isServer)
+                    serverSendData(KidPaint.name);
+                else
+                    clientSend();
             }
         });
 
@@ -170,9 +174,18 @@ public class UI extends JFrame {
 
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0)
-                    paintPixel(e.getX() / blockSize, e.getY() / blockSize);
-            }
+                if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0){
+                    int column = e.getX() / blockSize;
+                    int row = e.getY() / blockSize;
+                    paintPixel(column, row, selectedColor);
+                    if(KidPaint.isServer)
+                        serverSendData(KidPaint.name);
+                    else
+                        clientSend();
+                }
+
+                }
+
 
             @Override
             public void mouseMoved(MouseEvent e) {
@@ -409,6 +422,15 @@ public class UI extends JFrame {
                             }
                         }
                     }
+                    else if(specifier == 135){
+                        int row = in.readInt();
+                        int column = in.readInt();
+                        int color = in.readInt();
+                        if(KidPaint.isServer){
+                            paintPixel(row, column, color);
+                        }
+
+                    }
                 }
             }
         } catch (IOException e) {
@@ -429,15 +451,36 @@ public class UI extends JFrame {
         paintPanel.repaint();
     }
 
-    public void clientSend() throws IOException {
-        DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
-        out.writeInt(10000);
-        out.writeInt(223);
-        synchronized (data) {
-            for (int i = 0; i < 20; i++)
-                for (int j = 0; j < 20; j++)
-                    out.writeInt(data[i][j]);
+    public void clientSend() {
+        try {
+            DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
+            out.writeInt(1600);
+            out.writeInt(223);
+            synchronized (data) {
+                for (int i = 0; i < 20; i++)
+                    for (int j = 0; j < 20; j++)
+                        out.writeInt(data[i][j]);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
+
+    }
+
+    public void clientSend(int row, int column, int color) {
+        try {
+            DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
+            System.out.println("clientSendMessage" + row + ", " + column + ", " + ", " + color);
+            out.writeInt(data.length);
+            out.writeInt(135);
+            out.writeInt(row);
+            out.writeInt(column);
+            out.writeInt(color);
+        } catch (IOException e) {
+        }
+
+
     }
 
     public void clientSendName() {
@@ -472,24 +515,25 @@ public class UI extends JFrame {
                 if (dataList.size() > MAX) {
                     dataList.removeFirst();
                 }
-                dataList.addLast(this.data);}
-                System.out.println("Add data to dataList");
-                for (Socket clientSocket : connectedClients) {
-                    new Thread(() -> {
-                        try {
-                            DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
-                            out.writeInt(1600);
-                            out.writeInt(223);
-                            synchronized (data) {
-                                for (int i = 0; i < 20; i++)
-                                    for (int j = 0; j < 20; j++)
-                                        out.writeInt(data[i][j]);
-                            }
-                        } catch (IOException e) {
+                dataList.addLast(this.data);
+            }
+            System.out.println("Add data to dataList");
+            for (Socket clientSocket : connectedClients) {
+                new Thread(() -> {
+                    try {
+                        DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+                        out.writeInt(1600);
+                        out.writeInt(223);
+                        synchronized (data) {
+                            for (int i = 0; i < 20; i++)
+                                for (int j = 0; j < 20; j++)
+                                    out.writeInt(data[i][j]);
                         }
+                    } catch (IOException e) {
+                    }
 
-                    }).start();
-                }
+                }).start();
+            }
 
         }
     }
@@ -503,7 +547,28 @@ public class UI extends JFrame {
                         System.out.println("serverSendMessage" + new String(data) + data.length);
                         out.writeInt(data.length);
                         out.writeInt(100);
-                        out.write(data,0,data.length);
+                        out.write(data, 0, data.length);
+                    } catch (IOException e) {
+                    }
+
+
+                }).start();
+            }
+        }
+    }
+
+    public void serverSendData(int row, int column, int color) {
+        synchronized (connectedClients) {
+            for (Socket clientSocket : connectedClients) {
+                new Thread(() -> {
+                    try {
+                        DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+                        System.out.println("serverSendMessage" + row + ", " + column + ", " + ", " + color);
+                        out.writeInt(data.length);
+                        out.writeInt(135);
+                        out.writeInt(row);
+                        out.writeInt(column);
+                        out.writeInt(color);
                     } catch (IOException e) {
                     }
 
@@ -540,27 +605,19 @@ public class UI extends JFrame {
      *
      * @param col, row - the position of the selected pixel
      */
-    public void paintPixel(int col, int row) {
+    public void paintPixel(int col, int row, int color) {
         synchronized (data) {
             if (col >= data.length || row >= data[0].length) return;
 
-            if (data[col][row] == selectedColor)
+            if (data[col][row] == color)
                 return;
         }
         synchronized (data) {
-            data[col][row] = selectedColor;
+            data[col][row] = color;
         }
 
         paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
-        if (KidPaint.isServer)
-            serverSendData(KidPaint.name);
-        else {
-            try {
-                clientSend();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+
     }
 
     public void serve(Socket clientSocket) {
@@ -623,11 +680,7 @@ public class UI extends JFrame {
             if (KidPaint.isServer)
                 serverSendData(KidPaint.name);
             else {
-                try {
-                    clientSend();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                clientSend();
             }
             paintPanel.repaint();
         }
