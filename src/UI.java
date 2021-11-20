@@ -161,8 +161,10 @@ public class UI extends JFrame {
             // handle the mouse-up event of the paint panel
             @Override
             public void mouseReleased(MouseEvent e) {
+                boolean isChanged = false;
                 if (paintMode == PaintMode.Area && e.getX() >= 0 && e.getY() >= 0)
-                    paintArea(e.getX() / blockSize, e.getY() / blockSize);
+                    isChanged = paintArea(e.getX() / blockSize, e.getY() / blockSize);
+                if(!isChanged) return;
                 if(KidPaint.isServer)
                     serverSendData(KidPaint.name);
                 else
@@ -177,12 +179,14 @@ public class UI extends JFrame {
                 if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0){
                     int column = e.getX() / blockSize;
                     int row = e.getY() / blockSize;
+                    if (data[column][row] != selectedColor){
+
                     paintPixel(column, row, selectedColor);
                     if(KidPaint.isServer)
                         serverSendData(KidPaint.name);
                     else
                         clientSend();
-                }
+                }}
 
                 }
 
@@ -650,16 +654,18 @@ public class UI extends JFrame {
      * @param col, row - the position of the selected pixel
      * @return a list of modified pixels
      */
-    public List paintArea(int col, int row) {
+    public boolean paintArea(int col, int row) {
         LinkedList<Point> filledPixels = new LinkedList<>();
+        boolean signal = false;
         synchronized (data) {
-            if (col >= data.length || row >= data[0].length) return filledPixels;
+            if (col >= data.length || row >= data[0].length) return false;
 
             int oriColor = data[col][row];
             LinkedList<Point> buffer = new LinkedList<>();
 
             if (oriColor != selectedColor) {
                 buffer.add(new Point(col, row));
+                signal=true;
 
                 while (!buffer.isEmpty()) {
                     Point p = buffer.removeFirst();
@@ -677,14 +683,10 @@ public class UI extends JFrame {
                     if (y < data[0].length - 1 && data[x][y + 1] == oriColor) buffer.add(new Point(x, y + 1));
                 }
             }
-            if (KidPaint.isServer)
-                serverSendData(KidPaint.name);
-            else {
-                clientSend();
-            }
+
             paintPanel.repaint();
         }
-        return filledPixels;
+        return signal;
     }
 
     /**
