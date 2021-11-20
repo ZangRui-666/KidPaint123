@@ -277,6 +277,26 @@ public class UI extends JFrame {
             }
         });
 
+        //save button
+        JButton saveBt = new JButton("save");
+        toolPanel.add(saveBt);
+        saveBt.addActionListener(e -> {
+            //save action
+        });
+
+        //load button
+        JButton loadBt = new JButton("load (input filename)");
+        JTextField loadFileText = new JTextField();
+
+        toolPanel.add(loadBt);
+        toolPanel.add(loadFileText);
+        loadBt.addActionListener(e -> {
+            //load action
+        });
+
+
+
+
         JPanel manageGroupJP = new JPanel();
         manageGroupJP.setLayout(new FlowLayout());
 
