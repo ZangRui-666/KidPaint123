@@ -298,7 +298,7 @@ public class UI extends JFrame {
             //save action
             //get date
             Date date = new Date();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMdd");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMddHHmm");
             System.out.println(dateFormat.format(date));
 
             String filename = "kidPaint_" + dateFormat.format(date) + ".dat";
