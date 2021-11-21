@@ -161,7 +161,7 @@ public class UI extends JFrame {
                 int column = e.getX() / blockSize;
                 int row = e.getY() / blockSize;
                 if (paintMode == PaintMode.Area && e.getX() >= 0 && e.getY() >= 0)
-                    isChanged = paintArea(column, row,selectedColor);
+                    isChanged = paintArea(column, row, selectedColor);
                 if (!isChanged) return;
 
                 if (KidPaint.isServer)
@@ -500,14 +500,15 @@ public class UI extends JFrame {
                         int row = in.readInt();
                         int column = in.readInt();
                         int color = in.readInt();
-                        if(specifier == 135){
+                        if (specifier == 135) {
                             paintPixel(row, column, color);
-                        if (KidPaint.isServer)
-                            serverSendData(row, column, color,135);
+                            if (KidPaint.isServer)
+                                serverSendData(row, column, color, 135);
                         }
-                        if(specifier == 150){
-                            paintArea(row,column,color);
-                            serverSendData(row,column,color,150);
+                        if (specifier == 150) {
+                            paintArea(row, column, color);
+                            if (KidPaint.isServer)
+                                serverSendData(row, column, color, 150);
                         }
 
                     }
@@ -561,16 +562,6 @@ public class UI extends JFrame {
         }
 
 
-    }
-
-    public void clientSendName() {
-        try {
-            DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
-            out.writeInt(KidPaint.name.getBytes().length);
-            out.write(KidPaint.name.getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public void clientSend(byte[] data) {
