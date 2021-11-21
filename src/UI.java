@@ -276,12 +276,19 @@ public class UI extends JFrame {
         toolPanel.add(revocationBt);
         revocationBt.addActionListener(e -> {
             System.out.println("The size of linkedList is" + dataList.size());
-            int[][] array = dataList.getLast();
-            System.out.println(Arrays.toString(array[0]));
+            System.out.println("now the data is");
+            for(int i =0;i<20;i++)
+                System.out.print(data[i][0]+", ");
+            System.out.println();
             if (dataList.size() > 1) {
                 dataList.removeLast();
-                updatePainting(dataList.getLast());
+                System.out.println("remove last");
             }
+            System.out.println("The data after update is");
+            for(int i =0;i<20;i++)
+                System.out.print(data[i][0]+", ");
+            updatePainting(dataList.getLast());
+
         });
 
         //save button
@@ -581,13 +588,6 @@ public class UI extends JFrame {
         onTextInputted(msg);
         serverSendData(msg.getBytes());
         synchronized (connectedClients) {
-            synchronized (dataList) {
-                System.out.println("serverSendArray");
-                if (dataList.size() > MAX) {
-                    dataList.removeFirst();
-                }
-                dataList.addLast(this.data);
-            }
             System.out.println("Add data to dataList");
             for (Socket clientSocket : connectedClients) {
                 new Thread(() -> {
@@ -688,6 +688,16 @@ public class UI extends JFrame {
         }
 
         paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
+        if(KidPaint.isServer){
+            if (dataList.size() > MAX) {
+                dataList.removeFirst();
+            }
+            dataList.addLast(this.data);
+            System.out.println("add to datalist");
+            for(int i =0;i<20;i++)
+                System.out.print(data[i][0]+", ");
+            System.out.println();
+        }
 
     }
 
@@ -752,6 +762,13 @@ public class UI extends JFrame {
             }
 
             paintPanel.repaint();
+        }
+        if(KidPaint.isServer){
+            if (dataList.size() > MAX) {
+                dataList.removeFirst();
+            }
+            dataList.addLast(this.data);
+            System.out.println("add" + Arrays.toString(data[0]));
         }
         return signal;
     }
