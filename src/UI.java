@@ -166,9 +166,9 @@ public class UI extends JFrame {
 
                 if (KidPaint.isServer)
                     //serverSendData(KidPaint.name);
-                    serverSendData(row, column, selectedColor, 150);
+                    serverSendData(column, row, selectedColor, 150);
                 else
-                    clientSend(row, column, selectedColor, 150);
+                    clientSend(column, row, selectedColor, 150);
             }
         });
 
@@ -180,13 +180,12 @@ public class UI extends JFrame {
                     int column = e.getX() / blockSize;
                     int row = e.getY() / blockSize;
                     if (data[column][row] != selectedColor) {
-
                         paintPixel(column, row, selectedColor);
                         if (KidPaint.isServer)
                             //serverSendData(KidPaint.name);
-                            serverSendData(row, column, selectedColor, 135);
+                            serverSendData(column, row, selectedColor, 135);
                         else
-                            clientSend(row, column, selectedColor, 135);
+                            clientSend(column, row, selectedColor, 135);
                     }
                 }
 
@@ -469,6 +468,8 @@ public class UI extends JFrame {
             while (true) {
                 int len = in.readInt();
                 int specifier = in.readInt();
+                System.out.println("Server received a message"+ specifier);
+
                 if (specifier == 100) {
                     in.read(buffer, 0, len);
                     updateChatbox(buffer, len);
@@ -502,13 +503,14 @@ public class UI extends JFrame {
                                 serverSendData((msg).getBytes());
                                 onTextInputted(msg);
                             }
-                        }
+                        }}
                     } else if (specifier == 135 || specifier == 150) {
                         int row = in.readInt();
                         int column = in.readInt();
                         int color = in.readInt();
                         if (specifier == 135) {
                             paintPixel(row, column, color);
+                            System.out.println("Server received a message");
                             if (KidPaint.isServer)
                                 serverSendData(row, column, color, 135);
                         }
@@ -518,7 +520,7 @@ public class UI extends JFrame {
                                 serverSendData(row, column, color, 150);
                         }
 
-                    }
+
                 }
             }
         } catch (IOException e) {
@@ -559,8 +561,8 @@ public class UI extends JFrame {
     public void clientSend(int row, int column, int color, int specifier) {
         try {
             DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
-            System.out.println("clientSendMessage" + row + ", " + column + ", " + ", " + color);
-            out.writeInt(data.length);
+            System.out.println("clientSendMessage" + row + ", " + column + ", " + color);
+            out.writeInt(12);
             out.writeInt(specifier);
             out.writeInt(row);
             out.writeInt(column);
