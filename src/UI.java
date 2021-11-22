@@ -287,10 +287,11 @@ public class UI extends JFrame {
                 dataList.removeLast();
                 System.out.println("remove last");
             }
+            setData(dataList.getLast(),25);
             System.out.println("The data after update is");
             for (int i = 0; i < 20; i++)
                 System.out.print(data[i][0] + ", ");
-            setData(dataList.getLast(),25);
+            System.out.println();
 
         });
 
@@ -486,7 +487,7 @@ public class UI extends JFrame {
                     int[][] newData = new int[20][20];
                     for (int i = 0; i < 20; i++)
                         for (int j = 0; j < 20; j++)
-                            newData[j][i] = in.readInt();
+                            newData[i][j] = in.readInt();
                     updatePainting(newData);
                     if (KidPaint.isServer) {
                         String name = clientsNames.get(connectedClients.indexOf(socket));
@@ -704,10 +705,16 @@ public class UI extends JFrame {
                 if (dataList.size() > MAX) {
                     dataList.removeFirst();
                 }
-                dataList.addLast(this.data);
+                int[][] newData = new int[20][20];
+                for(int i=0;i<20;i++){
+                System.arraycopy(data[i],0,newData[i],0,20);}
+                dataList.add(newData);
                 System.out.println("add to datalist");
-                for (int i = 0; i < 20; i++)
-                    System.out.print(data[i][0] + ", ");
+                for(int j=0;j<dataList.size();j++) {
+                    for (int i = 0; i < 20; i++)
+                        System.out.print(dataList.get(j)[i][0] + ", ");
+                    System.out.println();
+                }
                 System.out.println();
             }
         }

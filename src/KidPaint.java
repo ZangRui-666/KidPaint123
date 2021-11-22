@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class KidPaint {
-	static String name = "Daming";
-	static String studioName = "Ro" ;
+	static String name = "server";
+	static String studioName = "Ray" ;
 	static String studioIP;
 	static String port;
 	static boolean isServer= true;
