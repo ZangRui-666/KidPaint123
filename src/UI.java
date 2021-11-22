@@ -575,6 +575,7 @@ public class UI extends JFrame {
             out.writeInt(row);
             out.writeInt(column);
             out.writeInt(color);
+            out.writeInt(12345);
         } catch (IOException e) {
         }
 
