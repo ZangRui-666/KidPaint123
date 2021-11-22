@@ -39,9 +39,11 @@ public class UI extends JFrame {
     static List<Socket> connectedClients = new ArrayList();
     static List<String> clientsNames = new ArrayList<>();
 
+
     private String message;
     private static UI instance;
     private int selectedColor = -543230;    //golden
+    JList<String> listView = new JList<String>();
 
     int[][] data = new int[20][20];            // pixel color data array
     static LinkedList<int[][]> dataList = new LinkedList<>();
@@ -92,13 +94,6 @@ public class UI extends JFrame {
             new Thread(() -> receiveData(KidPaint.socket)).start();
         }
         setTitle("KidPaint");
-
-
-        clientsNames.add("test1");
-        clientsNames.add("test2");
-        clientsNames.add("test3");
-        clientsNames.add("test4");
-        clientsNames.add("test5");
 
         JPanel basePanel = new JPanel();
         getContentPane().add(basePanel, BorderLayout.CENTER);
@@ -287,7 +282,7 @@ public class UI extends JFrame {
                 dataList.removeLast();
                 System.out.println("remove last");
             }
-            setData(dataList.getLast(),25);
+            setData(dataList.getLast(), 25);
             System.out.println("The data after update is");
             for (int i = 0; i < 20; i++)
                 System.out.print(data[i][0] + ", ");
@@ -364,10 +359,11 @@ public class UI extends JFrame {
         manageGroupJP.setLayout(new FlowLayout());
 
         if (KidPaint.isServer) {
-            String[] memberStrArray = new String[clientsNames.size()];
-            for (int i = 0; i < clientsNames.size(); i++)
-                memberStrArray[i] = " " + clientsNames.get(i);
-            JList<String> listView = new JList<>(memberStrArray);
+//            String[] memberStrArray = new String[clientsNames.size()];
+//            for (int i = 0; i < clientsNames.size(); i++)
+//                memberStrArray[i] = " " + clientsNames.get(i);
+            //JList<String> listView = new JList<String>();
+            listView.setListData(clientsNames.toArray(new String[clientsNames.size()]));
             JScrollPane sp = new JScrollPane(listView, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
             sp.setPreferredSize(new Dimension(100, 25));
 
@@ -385,6 +381,7 @@ public class UI extends JFrame {
                             connectedClients.get(index).close();
                             connectedClients.remove(index);
                             clientsNames.remove(index);
+                            listView.setListData(clientsNames.toArray(new String[clientsNames.size()]));
                         } catch (IOException ex) {
                             ex.printStackTrace();
                         }
@@ -393,7 +390,6 @@ public class UI extends JFrame {
                 }
 
                 System.out.println(listView.getSelectedValue().trim());
-                System.out.println("the size of the listView" + memberStrArray.length);
             });
         }
 
@@ -507,6 +503,8 @@ public class UI extends JFrame {
                                 String msg = str + " has joined the studio";
                                 serverSendData((msg).getBytes());
                                 onTextInputted(msg);
+                                listView.setListData(clientsNames.toArray(new String[clientsNames.size()]));
+
                             }
                         }
                     }
@@ -702,15 +700,13 @@ public class UI extends JFrame {
 
             paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
             if (KidPaint.isServer) {
-                if (dataList.size() > MAX) {
-                    dataList.removeFirst();
-                }
                 int[][] newData = new int[20][20];
-                for(int i=0;i<20;i++){
-                System.arraycopy(data[i],0,newData[i],0,20);}
+                for (int i = 0; i < 20; i++) {
+                    System.arraycopy(data[i], 0, newData[i], 0, 20);
+                }
                 dataList.add(newData);
                 System.out.println("add to datalist");
-                for(int j=0;j<dataList.size();j++) {
+                for (int j = 0; j < dataList.size(); j++) {
                     for (int i = 0; i < 20; i++)
                         System.out.print(dataList.get(j)[i][0] + ", ");
                     System.out.println();
@@ -791,13 +787,7 @@ public class UI extends JFrame {
 
             paintPanel.repaint();
         }
-        if (KidPaint.isServer) {
-            if (dataList.size() > MAX) {
-                dataList.removeFirst();
-            }
-            dataList.addLast(this.data);
-            System.out.println("add" + Arrays.toString(data[0]));
-        }
+
         return signal;
     }
 
