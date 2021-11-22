@@ -179,6 +179,8 @@ public class UI extends JFrame {
                 if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0) {
                     int column = e.getX() / blockSize;
                     int row = e.getY() / blockSize;
+                    if(column>19||row>19)
+                        return;
                     synchronized (data){
                     if (data[column][row] != selectedColor) {
                         paintPixel(column, row, selectedColor);
