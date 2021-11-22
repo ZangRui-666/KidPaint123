@@ -678,7 +678,7 @@ public class UI extends JFrame {
      *
      * @param col, row - the position of the selected pixel
      */
-    public void paintPixel(int col, int row, int color) {
+    public synchronized void paintPixel(int col, int row, int color) {
         synchronized (data) {
             if (col >= data.length || row >= data[0].length) return;
 
