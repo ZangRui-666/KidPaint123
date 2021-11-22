@@ -38,6 +38,8 @@ public class KidPaint {
 		UI ui = UI.getInstance();// get the instance of UI
 		UI.dataList.addLast(new int[20][20]);
 
+		if(isServer)
+			ui.setData(new int[20][20],25);
 		ui.setVisible(true);				// set the ui
 	}
 }
