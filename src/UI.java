@@ -179,6 +179,7 @@ public class UI extends JFrame {
                 if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0) {
                     int column = e.getX() / blockSize;
                     int row = e.getY() / blockSize;
+                    synchronized (data){
                     if (data[column][row] != selectedColor) {
                         paintPixel(column, row, selectedColor);
                         if (KidPaint.isServer)
@@ -186,7 +187,7 @@ public class UI extends JFrame {
                             serverSendData(column, row, selectedColor, 135);
                         else
                             clientSend(column, row, selectedColor, 135);
-                    }
+                    }}
                 }
 
             }
@@ -637,7 +638,7 @@ public class UI extends JFrame {
                     try {
                         DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
                         System.out.println("serverSendMessage" + row + ", " + column + ", " + ", " + color);
-                        out.writeInt(data.length);
+                        out.writeInt(12);
                         out.writeInt(specifier);
                         out.writeInt(row);
                         out.writeInt(column);
@@ -687,7 +688,7 @@ public class UI extends JFrame {
         }
         synchronized (data) {
             data[col][row] = color;
-        }
+
 
         paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
         if(KidPaint.isServer){
@@ -699,7 +700,7 @@ public class UI extends JFrame {
             for(int i =0;i<20;i++)
                 System.out.print(data[i][0]+", ");
             System.out.println();
-        }
+        }}
 
     }
 
