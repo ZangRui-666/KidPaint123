@@ -290,7 +290,7 @@ public class UI extends JFrame {
             System.out.println("The data after update is");
             for (int i = 0; i < 20; i++)
                 System.out.print(data[i][0] + ", ");
-            updatePainting(dataList.getLast());
+            setData(dataList.getLast(),25);
 
         });
 
@@ -800,7 +800,7 @@ public class UI extends JFrame {
      * @param data
      * @param blockSize
      */
-    public void setData(int[][] data, int blockSize) {
+    public synchronized void setData(int[][] data, int blockSize) {
         this.data = data;
         this.blockSize = blockSize;
         paintPanel.setPreferredSize(new Dimension(data.length * blockSize, data[0].length * blockSize));
