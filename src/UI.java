@@ -179,17 +179,18 @@ public class UI extends JFrame {
                 if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0) {
                     int column = e.getX() / blockSize;
                     int row = e.getY() / blockSize;
-                    if(column>19||row>19)
+                    if (column > 19 || row > 19)
                         return;
-                    synchronized (data){
-                    if (data[column][row] != selectedColor) {
-                        paintPixel(column, row, selectedColor);
-                        if (KidPaint.isServer)
-                            //serverSendData(KidPaint.name);
-                            serverSendData(column, row, selectedColor, 135);
-                        else
-                            clientSend(column, row, selectedColor, 135);
-                    }}
+                    synchronized (data) {
+                        if (data[column][row] != selectedColor) {
+                            paintPixel(column, row, selectedColor);
+                            if (KidPaint.isServer)
+                                //serverSendData(KidPaint.name);
+                                serverSendData(column, row, selectedColor, 135);
+                            else
+                                clientSend(column, row, selectedColor, 135);
+                        }
+                    }
                 }
 
             }
@@ -279,16 +280,16 @@ public class UI extends JFrame {
         revocationBt.addActionListener(e -> {
             System.out.println("The size of linkedList is" + dataList.size());
             System.out.println("now the data is");
-            for(int i =0;i<20;i++)
-                System.out.print(data[i][0]+", ");
+            for (int i = 0; i < 20; i++)
+                System.out.print(data[i][0] + ", ");
             System.out.println();
             if (dataList.size() > 1) {
                 dataList.removeLast();
                 System.out.println("remove last");
             }
             System.out.println("The data after update is");
-            for(int i =0;i<20;i++)
-                System.out.print(data[i][0]+", ");
+            for (int i = 0; i < 20; i++)
+                System.out.print(data[i][0] + ", ");
             updatePainting(dataList.getLast());
 
         });
@@ -471,7 +472,7 @@ public class UI extends JFrame {
             while (true) {
                 int len = in.readInt();
                 int specifier = in.readInt();
-                System.out.println("Server received a message"+ specifier);
+                System.out.println("Server received a message" + specifier);
 
                 if (specifier == 100) {
                     in.read(buffer, 0, len);
@@ -506,11 +507,14 @@ public class UI extends JFrame {
                                 serverSendData((msg).getBytes());
                                 onTextInputted(msg);
                             }
-                        }}
-                    } else if (specifier == 135 || specifier == 150) {
-                        int row = in.readInt();
-                        int column = in.readInt();
-                        int color = in.readInt();
+                        }
+                    }
+                } else if (specifier == 135 || specifier == 150) {
+                    int row = in.readInt();
+                    int column = in.readInt();
+                    int color = in.readInt();
+                    int end = in.readInt();
+                    if (end == 12345) {
                         if (specifier == 135) {
                             paintPixel(row, column, color);
                             System.out.println("Server received a message");
@@ -522,6 +526,7 @@ public class UI extends JFrame {
                             if (KidPaint.isServer)
                                 serverSendData(row, column, color, 150);
                         }
+                    }
 
 
                 }
@@ -645,6 +650,7 @@ public class UI extends JFrame {
                         out.writeInt(row);
                         out.writeInt(column);
                         out.writeInt(color);
+                        out.writeInt(12345);
                     } catch (IOException e) {
                     }
 
@@ -692,17 +698,18 @@ public class UI extends JFrame {
             data[col][row] = color;
 
 
-        paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
-        if(KidPaint.isServer){
-            if (dataList.size() > MAX) {
-                dataList.removeFirst();
+            paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
+            if (KidPaint.isServer) {
+                if (dataList.size() > MAX) {
+                    dataList.removeFirst();
+                }
+                dataList.addLast(this.data);
+                System.out.println("add to datalist");
+                for (int i = 0; i < 20; i++)
+                    System.out.print(data[i][0] + ", ");
+                System.out.println();
             }
-            dataList.addLast(this.data);
-            System.out.println("add to datalist");
-            for(int i =0;i<20;i++)
-                System.out.print(data[i][0]+", ");
-            System.out.println();
-        }}
+        }
 
     }
 
@@ -776,7 +783,7 @@ public class UI extends JFrame {
 
             paintPanel.repaint();
         }
-        if(KidPaint.isServer){
+        if (KidPaint.isServer) {
             if (dataList.size() > MAX) {
                 dataList.removeFirst();
             }
