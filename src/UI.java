@@ -710,6 +710,14 @@ public class UI extends JFrame {
 
         while (true) {
             Socket cSocket = serverSocket.accept();
+            DataOutputStream out = new DataOutputStream(cSocket.getOutputStream());
+            out.writeInt(1600);
+            out.writeInt(223);
+            synchronized (data) {
+                for (int i = 0; i < 20; i++)
+                    for (int j = 0; j < 20; j++)
+                        out.writeInt(data[i][j]);
+            }
             synchronized (connectedClients) {
                 connectedClients.add(cSocket);
                 System.out.printf("Total %d clients are connected.\n", connectedClients.size());
