@@ -378,9 +378,12 @@ public class UI extends JFrame {
                     synchronized (connectedClients) {
                         int index = clientsNames.indexOf(listView.getSelectedValue());
                         try {
+                            String msg = "#*Goodbye*#";
+                            serverSendData(connectedClients.get(index), msg.getBytes());
                             connectedClients.get(index).close();
                             connectedClients.remove(index);
                             clientsNames.remove(index);
+
                             listView.setListData(clientsNames.toArray(new String[clientsNames.size()]));
                         } catch (IOException ex) {
                             ex.printStackTrace();
@@ -536,8 +539,13 @@ public class UI extends JFrame {
     }
 
     private synchronized void updateChatbox(byte[] buffer, int length) {
+        String msg = new String(buffer,0,length);
+        if(msg.equalsIgnoreCase("#*Goodbye*#")){
+            JOptionPane.showMessageDialog(null,"You have been removed from the studio, but you can" +
+                    "still draw your painting offline", "Notification",JOptionPane.WARNING_MESSAGE);
+        }
         SwingUtilities.invokeLater(() -> {
-            chatArea.append(new String(buffer, 0, length) + "\n");
+            chatArea.append(msg + "\n");
         });
     }
 
@@ -619,6 +627,18 @@ public class UI extends JFrame {
         }
     }
 
+    public void serverSendData(Socket cSocket, byte[] data){
+        DataOutputStream out;
+        try {
+            out = new DataOutputStream(cSocket.getOutputStream());
+            out.writeInt(data.length);
+            out.writeInt(100);
+            out.write(data, 0, data.length);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
     public void serverSendData(byte[] data) {
         synchronized (connectedClients) {
             for (Socket clientSocket : connectedClients) {
