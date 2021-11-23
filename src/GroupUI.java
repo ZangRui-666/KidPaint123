@@ -1,5 +1,5 @@
 /*
-    This class shows a perform group page for the user. Users can find all current existing groups and choose one to join in.
+    This class shows a group page for the user. Users can find all current existing groups and choose one to join in.
     Also, they can create a new group and be the server of the group by himself.
  */
 
