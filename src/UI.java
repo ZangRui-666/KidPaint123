@@ -487,7 +487,7 @@ public class UI extends JFrame {
                     for (int i = 0; i < 20; i++)
                         for (int j = 0; j < 20; j++)
                             newData[i][j] = in.readInt();
-                    updatePainting(newData);
+                    setData(newData, 25);
                     if (KidPaint.isServer) {
                         String name = clientsNames.get(connectedClients.indexOf(socket));
                         serverSendData(name);
@@ -534,7 +534,9 @@ public class UI extends JFrame {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(null,"Connection reset, the sever may be shut down, you can still draw offline.", "Notification",JOptionPane.WARNING_MESSAGE);
+            System.out.println("Connection reset, the sever may be shut down.");
+            //e.printStackTrace();
         }
     }
 
