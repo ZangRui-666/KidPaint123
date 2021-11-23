@@ -1,7 +1,3 @@
-/**
- *
- */
-
 import javax.swing.*;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -58,8 +54,7 @@ public class UI extends JFrame {
 
     /**
      * get the instance of UI. Singleton design pattern.
-     *
-     * @return
+     * @return initialized instance of UI
      */
     public static UI getInstance() {
         if (instance == null)
@@ -448,7 +443,10 @@ public class UI extends JFrame {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
-    //for server use
+    /**
+     * For server to receive UDP broadcast from potential clients and send the studio name back to them
+     * @throws IOException
+     */
     public void receiveAndNotify() throws IOException {
         message = "##" + KidPaint.studioName + ";;" + "2345";
         while (true) {
@@ -467,6 +465,10 @@ public class UI extends JFrame {
         }
     }
 
+    /**
+     * receive data from socket using TCP
+     * @param socket
+     */
     private void receiveData(Socket socket) {
         try {
             byte[] buffer = new byte[1024];
@@ -474,8 +476,6 @@ public class UI extends JFrame {
             while (true) {
                 int len = in.readInt();
                 int specifier = in.readInt();
-                System.out.println("Server received a message" + specifier);
-
                 if (specifier == 100) {
                     in.read(buffer, 0, len);
                     updateChatbox(buffer, len);

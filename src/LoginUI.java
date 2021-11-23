@@ -1,5 +1,5 @@
 /*
-    This class is showing a Login UI page for users to input their user name and licences.
+    This class is showing a Login UI page for users to input their username and licences.
  */
 
 
@@ -18,11 +18,16 @@ public class LoginUI extends JFrame implements ActionListener {
     static boolean isLogin = false;
     private static LoginUI instance;
 
+    /**
+     * get the instance of LoginUI. Singleton design pattern.
+     * @return initialized instance of LoinUI
+     */
     public static LoginUI getInstance() {
         if (instance == null)
             instance = new LoginUI();
         return instance;
     }
+
 
     public LoginUI() {
         //get container of the window
