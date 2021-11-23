@@ -93,8 +93,9 @@ public class UI extends JFrame {
         } else {
             new Thread(() -> receiveData(KidPaint.socket)).start();
         }
-        setTitle("KidPaint");
 
+        //set title and base layout of the base panel
+        setTitle("KidPaint");
         JPanel basePanel = new JPanel();
         getContentPane().add(basePanel, BorderLayout.CENTER);
         basePanel.setLayout(new BorderLayout(0, 0));
@@ -269,9 +270,11 @@ public class UI extends JFrame {
             }
         });
 
-
+        //add revocation button allow user to do revocation
         revocationBt = new JButton("revocation");
         toolPanel.add(revocationBt);
+
+        //add listener of the revocation button
         revocationBt.addActionListener(e -> {
             System.out.println("The size of linkedList is" + dataList.size());
             System.out.println("now the data is");
@@ -312,10 +315,8 @@ public class UI extends JFrame {
                 out.close();
             } catch (FileNotFoundException ex) {
                 System.out.println("the file is no found");
-                //ex.printStackTrace();
             } catch (IOException ioException) {
                 System.out.println("there is an IO exception!");
-                //ioException.printStackTrace();
             }
         });
 
@@ -330,6 +331,7 @@ public class UI extends JFrame {
             if (loadFileText.equals("")) return;
             File inputFile = new File(loadFileText.getText());
             if (!inputFile.exists()) {
+                JOptionPane.showMessageDialog(null,"The file is not exist!", "Notification",JOptionPane.WARNING_MESSAGE);
                 System.out.println("The file is not exist!");
                 return;
             }
@@ -346,27 +348,24 @@ public class UI extends JFrame {
                 if (KidPaint.isServer) serverSendData(KidPaint.name);
                 else clientSend();
             } catch (FileNotFoundException ex) {
+                JOptionPane.showMessageDialog(null,"The file is not exist!", "Notification",JOptionPane.WARNING_MESSAGE);
                 System.out.println("The file is not exist!");
-                ex.printStackTrace();
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
         });
-
 
         toolPanel.setBackground(Color.white);
         JPanel manageGroupJP = new JPanel();
         manageGroupJP.setLayout(new FlowLayout());
 
         if (KidPaint.isServer) {
-//            String[] memberStrArray = new String[clientsNames.size()];
-//            for (int i = 0; i < clientsNames.size(); i++)
-//                memberStrArray[i] = " " + clientsNames.get(i);
-            //JList<String> listView = new JList<String>();
+            //add listView of current connected clients
             listView.setListData(clientsNames.toArray(new String[clientsNames.size()]));
             JScrollPane sp = new JScrollPane(listView, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
             sp.setPreferredSize(new Dimension(100, 25));
 
+            //add delete button to kick out clients
             JButton btn = new JButton("Delete");
             manageGroupJP.add(sp);
             manageGroupJP.add(btn);
@@ -432,7 +431,6 @@ public class UI extends JFrame {
             }
 
         });
-
 
         chatArea = new JTextArea();        // the read only text area for showing messages
         chatArea.setEditable(false);
@@ -536,7 +534,6 @@ public class UI extends JFrame {
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null,"Connection reset, the sever may be shut down, you can still draw offline.", "Notification",JOptionPane.WARNING_MESSAGE);
             System.out.println("Connection reset, the sever may be shut down.");
-            //e.printStackTrace();
         }
     }
 

@@ -1,3 +1,8 @@
+/*
+    This class is showing a Login UI page for users to input their user name and licences.
+ */
+
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -16,14 +21,16 @@ public class LoginUI extends JFrame implements ActionListener {
     public static LoginUI getInstance() {
         if (instance == null)
             instance = new LoginUI();
-
         return instance;
     }
 
     public LoginUI() {
+        //get container of the window
         Container container = this.getContentPane();
         container.setLayout(new GridLayout(0, 1, 10, 10));
         container.setBackground(Color.white);
+
+        //title of KidPaint
         Font font1 = new Font("SansSerif", Font.BOLD, 20);
         JTextArea titleArea1 = new JTextArea();
         titleArea1.setFont(font1);
@@ -32,7 +39,7 @@ public class LoginUI extends JFrame implements ActionListener {
         titleArea1.setMargin(new Insets(0, 10, 0, 10));
         titleArea1.setBackground(Color.white);
 
-
+        //description of the KidPaint
         Font font2 = new Font("Georgia", Font.PLAIN, 15);
         JTextArea descriptionArea2 = new JTextArea();
         descriptionArea2.setFont(font2);
@@ -52,6 +59,7 @@ public class LoginUI extends JFrame implements ActionListener {
         heroJPane.add(descriptionArea2);
         container.add(heroJPane, BorderLayout.NORTH);
 
+        //enter name and licence number
         nameJLabel = new JLabel("Enter your name：");
         nameJLabel.setBounds(150, 50, 300, 30);
         licenceJLabel = new JLabel("Enter your licence number(default: 123456): ");
@@ -61,6 +69,7 @@ public class LoginUI extends JFrame implements ActionListener {
         licenceField = new JPasswordField();
         licenceField.setBounds(450, 100, 200, 30);
 
+        //add login to container
         loginJPane = new JPanel();
         loginJPane.setBackground(Color.white);
         loginJPane.setLayout(null);
@@ -70,6 +79,7 @@ public class LoginUI extends JFrame implements ActionListener {
         loginJPane.add(licenceField);
         container.add(loginJPane, BorderLayout.CENTER);
 
+        //submit button
         submitJButton = new JButton("Submit");
         submitJButton.setBounds(350, 30, 80, 50);
         submitJPane = new JPanel();
@@ -78,7 +88,7 @@ public class LoginUI extends JFrame implements ActionListener {
         container.add(submitJPane, BorderLayout.SOUTH);
         submitJPane.add(submitJButton);
 
-
+        //lister of submit button
         submitJButton.addActionListener(this);
         this.setTitle("KidPaint.Login");
         this.setSize(800, 600);
@@ -87,13 +97,10 @@ public class LoginUI extends JFrame implements ActionListener {
         this.setVisible(true);
     }
 
-//    public static void main(String[] args) {
-//        new LoginUI();
-//    }
-
     @Override
     public void actionPerformed(ActionEvent e) {
 
+        //if click submit button
         if (e.getSource() == submitJButton) {
             String licence = "123456";
 
@@ -107,6 +114,7 @@ public class LoginUI extends JFrame implements ActionListener {
         }
     }
 
+    //get name of the user input
     public String getName() {
         return name;
     }
