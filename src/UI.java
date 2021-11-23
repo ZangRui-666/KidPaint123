@@ -47,9 +47,10 @@ public class UI extends JFrame {
 
     int[][] data = new int[20][20];            // pixel color data array
     static LinkedList<int[][]> dataList = new LinkedList<>();
+    Vector<int[][]> vectorList = new Vector();
     static int MAX = 10;
 
-    int blockSize = 16;
+    int blockSize = 25;
     PaintMode paintMode = PaintMode.Pixel;
 
     /**
@@ -283,6 +284,8 @@ public class UI extends JFrame {
             if (dataList.size() > 1) {
                 dataList.removeLast();
                 System.out.println("remove last");
+                System.gc();
+                Runtime.getRuntime().gc();
             }
             setData(dataList.getLast(), 25);
             System.out.println("The data after update is");
@@ -749,13 +752,13 @@ public class UI extends JFrame {
 
             if (data[col][row] == color)
                 return;
-        }
-        synchronized (data) {
+
             data[col][row] = color;
-
-
             paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
+
             if (KidPaint.isServer) {
+                System.gc();
+                Runtime.getRuntime().gc();
                 int[][] newData = new int[20][20];
                 for (int i = 0; i < 20; i++) {
                     System.arraycopy(data[i], 0, newData[i], 0, 20);
