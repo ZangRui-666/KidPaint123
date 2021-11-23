@@ -15,16 +15,16 @@ public class KidPaint {
 	static DatagramSocket dSocket;
 
 	public static void main(String[] args) {
-//		LoginUI loginUI = LoginUI.getInstance();
-//		loginUI.setVisible(true);
-//
-//		while (!LoginUI.isLogin){
-//			try {
-//				Thread.sleep(1);
-//			} catch(Exception ex) {}
-//		}
-//		loginUI.setVisible(false);
-//		name = loginUI.getName();
+		LoginUI loginUI = LoginUI.getInstance();
+		loginUI.setVisible(true);
+
+		while (!LoginUI.isLogin){
+			try {
+				Thread.sleep(1);
+			} catch(Exception ex) {}
+		}
+		loginUI.setVisible(false);
+		name = loginUI.getName();
 
 		GroupUI groupUI = GroupUI.getInstance();
 		groupUI.setVisible(true);

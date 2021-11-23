@@ -1,6 +1,6 @@
 /*
     This class shows a perform group page for the user. Users can find all current existing groups and choose one to join in.
-    Also, they can create a new group and be the sever of the group by himself.
+    Also, they can create a new group and be the server of the group by himself.
  */
 
 import javax.swing.*;
@@ -21,6 +21,8 @@ public class GroupUI extends JFrame implements ActionListener {
 
     static ArrayList<String> studioNames = new ArrayList<>();
     static ArrayList<String> serverIP = new ArrayList<>();
+    static ArrayList<Integer> portNum = new ArrayList<>();
+
     ArrayList<JButton> groupButtons = new ArrayList<>();
     private static GroupUI instance;
 
@@ -39,7 +41,6 @@ public class GroupUI extends JFrame implements ActionListener {
         }
 
 
-        System.out.println("sfdf");
         sendMessage();
         long timer = System.currentTimeMillis();
         Thread thread = new Thread(() -> receiveMessage());
@@ -134,7 +135,7 @@ public class GroupUI extends JFrame implements ActionListener {
             if (e.getSource() == groupButtons.get(i)) {
                 KidPaint.isServer = false;
                 KidPaint.studioName = studioNames.get(i);
-                connectToServer(serverIP.get(i));
+                connectToServer(serverIP.get(i), portNum.get(i));
                 System.out.println("join in group name: " + KidPaint.studioName);
                 break;
             }
@@ -153,6 +154,7 @@ public class GroupUI extends JFrame implements ActionListener {
                     str = str.substring(2);
                     String[] splitStr = str.split(";;");
                     studioNames.add(splitStr[0]);
+                    portNum.add(Integer.valueOf(splitStr[1]));
                     serverIP.add(packet.getAddress().toString().substring(1));
                 }
             }
@@ -161,9 +163,9 @@ public class GroupUI extends JFrame implements ActionListener {
         }
     }
 
-    private void connectToServer(String IP) {
+    private void connectToServer(String IP, int port) {
         try {
-            KidPaint.socket = new Socket(IP, 2345);
+            KidPaint.socket = new Socket(IP, port);
             DataOutputStream dop = new DataOutputStream(KidPaint.socket.getOutputStream());
             dop.writeInt(KidPaint.name.getBytes().length);
             dop.writeInt(236);

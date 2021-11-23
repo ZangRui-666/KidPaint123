@@ -43,7 +43,7 @@ public class UI extends JFrame {
     private String message;
     private static UI instance;
     private int selectedColor = -543230;    //golden
-    JList<String> listView = new JList<String>();
+    JList<String> listView = new JList<>();
 
     int[][] data = new int[20][20];            // pixel color data array
     static LinkedList<int[][]> dataList = new LinkedList<>();
