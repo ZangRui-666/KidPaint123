@@ -1,3 +1,7 @@
+/**
+ *
+ */
+
 import javax.swing.*;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -341,7 +345,7 @@ public class UI extends JFrame {
                         inputDataArray[i][j] = in.readInt();
                     }
                 }
-                updatePainting(inputDataArray);
+                setData(inputDataArray, 25);
                 in.close();
                 if (KidPaint.isServer) serverSendData(KidPaint.name);
                 else clientSend();
@@ -540,6 +544,11 @@ public class UI extends JFrame {
         }
     }
 
+    /**
+     * update the content of chatbox
+     * @param buffer the message in bytes
+     * @param length the length of the message
+     */
     private synchronized void updateChatbox(byte[] buffer, int length) {
         String msg = new String(buffer,0,length);
         if(msg.equalsIgnoreCase("#*Goodbye*#")){
@@ -551,13 +560,9 @@ public class UI extends JFrame {
         });
     }
 
-    private void updatePainting(int[][] newData) {
-        synchronized (data) {
-            data = newData;
-        }
-        paintPanel.repaint();
-    }
-
+    /**
+     *  For client to send the data array to connected clients
+     */
     public void clientSend() {
         try {
             DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
@@ -575,6 +580,13 @@ public class UI extends JFrame {
 
     }
 
+    /**
+     * For client to send painting actions to its server
+     * @param row the row where painting actions performed
+     * @param column the column where painting actions performed
+     * @param color the color used
+     * @param specifier if 135, paint pixel; if 150, paint area
+     */
     public void clientSend(int row, int column, int color, int specifier) {
         try {
             DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
@@ -591,6 +603,10 @@ public class UI extends JFrame {
 
     }
 
+    /**
+     * for user to send messages to the server
+     * @param data the bytes array transformed from the message
+     */
     public void clientSend(byte[] data) {
         try {
             DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
@@ -603,6 +619,10 @@ public class UI extends JFrame {
 
     }
 
+    /**
+     * For server to send the data array to connected clients
+     * @param name the name who made the change
+     */
     public void serverSendData(String name) {
         String msg = name + "has made a change";
         onTextInputted(msg);
@@ -629,6 +649,11 @@ public class UI extends JFrame {
         }
     }
 
+    /**
+     * For server to send messages to a specific clients
+     * @param cSocket the socket of target client
+     * @param data the bytes array transformed from message need to be sent
+     */
     public void serverSendData(Socket cSocket, byte[] data){
         DataOutputStream out;
         try {
@@ -641,6 +666,11 @@ public class UI extends JFrame {
         }
 
     }
+
+    /**
+     * For server to send messages to all connected clients
+     * @param data the bytes array transformed from message need to be sent
+     */
     public void serverSendData(byte[] data) {
         synchronized (connectedClients) {
             for (Socket clientSocket : connectedClients) {
@@ -660,6 +690,13 @@ public class UI extends JFrame {
         }
     }
 
+    /**
+     * For server to send painting actions to its connected clients
+     * @param row the row where painting actions performed
+     * @param column the column where painting actions performed
+     * @param color the color used
+     * @param specifier if 135, paint pixel; if 150, paint area
+     */
     public void serverSendData(int row, int column, int color, int specifier) {
         synchronized (connectedClients) {
             for (Socket clientSocket : connectedClients) {
@@ -739,10 +776,18 @@ public class UI extends JFrame {
 
     }
 
+    /**
+     * receive data from TCP of a client
+     * @param clientSocket socket of the client
+     */
     public void serve(Socket clientSocket) {
         receiveData(clientSocket);
     }
 
+    /**
+     * used for server
+     * @throws IOException
+     */
     public void server() throws IOException {
         serverSocket = new ServerSocket(2345);
 
