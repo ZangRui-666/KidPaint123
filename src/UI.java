@@ -555,9 +555,12 @@ public class UI extends JFrame {
                         break;
                     case 188:
                         freeze = true;
+                        JOptionPane.showMessageDialog(null, "Your painting panel was frozen by the server", "Notification", JOptionPane.WARNING_MESSAGE);
                         break;
                     case 189:
                         freeze = false;
+                        JOptionPane.showMessageDialog(null, "Your painting panel was unfrozen by the server, you can continue drawing now", "Notification", JOptionPane.WARNING_MESSAGE);
+
                         break;
                 }
             }
