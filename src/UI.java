@@ -962,7 +962,7 @@ public class UI extends JFrame {
     public synchronized void setData(int[][] data, int blockSize) {
         int[][] newData = new int[20][20];
         for (int i = 0; i < 20; i++)
-            System.arraycopy(data, 0, newData, 0, 20);
+            System.arraycopy(data[i], 0, newData[i], 0, 20);
         this.data = newData;
         this.blockSize = blockSize;
         paintPanel.setPreferredSize(new Dimension(data.length * blockSize, data[0].length * blockSize));
