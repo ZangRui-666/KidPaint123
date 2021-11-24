@@ -946,6 +946,20 @@ public class UI extends JFrame {
                     if (y < data[0].length - 1 && data[x][y + 1] == oriColor) buffer.add(new Point(x, y + 1));
                 }
             }
+            if (KidPaint.isServer) {
+                int[][] newData = new int[20][20];
+                for (int i = 0; i < 20; i++) {
+                    System.arraycopy(data[i], 0, newData[i], 0, 20);
+                }
+                dataList.add(newData);
+
+                for (int j = 0; j < dataList.size(); j++) {
+                    for (int i = 0; i < 20; i++)
+                        System.out.print(dataList.get(j)[i][0] + ", ");
+                    System.out.println();
+                }
+                System.out.println();
+            }
 
             paintPanel.repaint();
         }
