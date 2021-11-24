@@ -52,6 +52,7 @@ public class UI extends JFrame {
 
     int blockSize = 25;
     PaintMode paintMode = PaintMode.Pixel;
+    boolean isPickingColor = false;
 
     /**
      * get the instance of UI. Singleton design pattern.
@@ -137,6 +138,16 @@ public class UI extends JFrame {
         paintPanel.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                if(isPickingColor){
+                    int column = e.getX() / blockSize;
+                    int row = e.getY() / blockSize;
+                    if (column > 19 || row > 19)
+                        return;
+                    selectedColor = data[column][row];
+                    isPickingColor = false;
+                    pnlColorPicker.setBackground(new Color(selectedColor));
+                    return;
+                }
                 if(freeze==true&&KidPaint.isServer)
                     return;
                 if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0){
@@ -295,8 +306,9 @@ public class UI extends JFrame {
         //pickColor button
         JButton pickColorBt = new JButton("pickColor");
         toolPanel.add(pickColorBt);
-        pickColorBt.addActionListener(e -> {
 
+        pickColorBt.addActionListener(e -> {
+            isPickingColor = true;
         });
 
         //save button
