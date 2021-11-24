@@ -164,7 +164,6 @@ public class UI extends JFrame {
                 if (!isChanged) return;
 
                 if (KidPaint.isServer)
-                    //serverSendData(KidPaint.name);
                     serverSendData(column, row, selectedColor, 150);
                 else
                     clientSend(column, row, selectedColor, 150);
@@ -195,7 +194,6 @@ public class UI extends JFrame {
                 }
 
             }
-
 
             @Override
             public void mouseMoved(MouseEvent e) {
@@ -276,6 +274,12 @@ public class UI extends JFrame {
         });
 
 
+        //pickColor button
+        JButton pickColorBt = new JButton("pickColor");
+        toolPanel.add(pickColorBt);
+        pickColorBt.addActionListener(e -> {
+
+        });
 
         //save button
         JButton saveBt = new JButton("save");
