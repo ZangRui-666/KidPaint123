@@ -55,6 +55,7 @@ public class UI extends JFrame {
 
     /**
      * get the instance of UI. Singleton design pattern.
+     *
      * @return initialized instance of UI
      */
     public static UI getInstance() {
@@ -333,7 +334,7 @@ public class UI extends JFrame {
             if (loadFileText.equals("")) return;
             File inputFile = new File(loadFileText.getText());
             if (!inputFile.exists()) {
-                JOptionPane.showMessageDialog(null,"The file is not exist!", "Notification",JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(null, "The file is not exist!", "Notification", JOptionPane.WARNING_MESSAGE);
                 System.out.println("The file is not exist!");
                 return;
             }
@@ -350,7 +351,7 @@ public class UI extends JFrame {
                 if (KidPaint.isServer) serverSendData(KidPaint.name);
                 else clientSend();
             } catch (FileNotFoundException ex) {
-                JOptionPane.showMessageDialog(null,"The file is not exist!", "Notification",JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(null, "The file is not exist!", "Notification", JOptionPane.WARNING_MESSAGE);
                 System.out.println("The file is not exist!");
             } catch (IOException ioException) {
                 ioException.printStackTrace();
@@ -392,8 +393,8 @@ public class UI extends JFrame {
 
                     }
                 }
-
-                System.out.println(listView.getSelectedValue().trim());
+                if (listView.getSelectedValue() != null)
+                    System.out.println(listView.getSelectedValue().trim());
             });
         }
 
@@ -448,6 +449,7 @@ public class UI extends JFrame {
 
     /**
      * For server to receive UDP broadcast from potential clients and send the studio name back to them
+     *
      * @throws IOException
      */
     public void receiveAndNotify() throws IOException {
@@ -470,6 +472,7 @@ public class UI extends JFrame {
 
     /**
      * receive data from socket using TCP
+     *
      * @param socket
      */
     private void receiveData(Socket socket) {
@@ -539,29 +542,27 @@ public class UI extends JFrame {
                 }
             }
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(null,"Connection reset, the sever may be shut down, you can still draw offline.", "Notification",JOptionPane.WARNING_MESSAGE);
+            if (!KidPaint.isServer)
+                JOptionPane.showMessageDialog(null, "The sever may be shut down, or you have been removed from the studio, but you can still draw offline.", "Notification", JOptionPane.WARNING_MESSAGE);
             System.out.println("Connection reset, the sever may be shut down.");
         }
     }
 
     /**
      * update the content of chatbox
+     *
      * @param buffer the message in bytes
      * @param length the length of the message
      */
     private synchronized void updateChatbox(byte[] buffer, int length) {
-        String msg = new String(buffer,0,length);
-        if(msg.equalsIgnoreCase("#*Goodbye*#")){
-            JOptionPane.showMessageDialog(null,"You have been removed from the studio, but you can" +
-                    "still draw your painting offline", "Notification",JOptionPane.WARNING_MESSAGE);
-        }
+        String msg = new String(buffer, 0, length);
         SwingUtilities.invokeLater(() -> {
             chatArea.append(msg + "\n");
         });
     }
 
     /**
-     *  For client to send the data array to connected clients
+     * For client to send the data array to connected clients
      */
     public void clientSend() {
         try {
@@ -582,9 +583,10 @@ public class UI extends JFrame {
 
     /**
      * For client to send painting actions to its server
-     * @param row the row where painting actions performed
-     * @param column the column where painting actions performed
-     * @param color the color used
+     *
+     * @param row       the row where painting actions performed
+     * @param column    the column where painting actions performed
+     * @param color     the color used
      * @param specifier if 135, paint pixel; if 150, paint area
      */
     public void clientSend(int row, int column, int color, int specifier) {
@@ -605,6 +607,7 @@ public class UI extends JFrame {
 
     /**
      * for user to send messages to the server
+     *
      * @param data the bytes array transformed from the message
      */
     public void clientSend(byte[] data) {
@@ -621,6 +624,7 @@ public class UI extends JFrame {
 
     /**
      * For server to send the data array to connected clients
+     *
      * @param name the name who made the change
      */
     public void serverSendData(String name) {
@@ -628,7 +632,6 @@ public class UI extends JFrame {
         onTextInputted(msg);
         serverSendData(msg.getBytes());
         synchronized (connectedClients) {
-            System.out.println("Add data to dataList");
             for (Socket clientSocket : connectedClients) {
                 new Thread(() -> {
                     try {
@@ -651,10 +654,11 @@ public class UI extends JFrame {
 
     /**
      * For server to send messages to a specific clients
+     *
      * @param cSocket the socket of target client
-     * @param data the bytes array transformed from message need to be sent
+     * @param data    the bytes array transformed from message need to be sent
      */
-    public void serverSendData(Socket cSocket, byte[] data){
+    public void serverSendData(Socket cSocket, byte[] data) {
         DataOutputStream out;
         try {
             out = new DataOutputStream(cSocket.getOutputStream());
@@ -669,6 +673,7 @@ public class UI extends JFrame {
 
     /**
      * For server to send messages to all connected clients
+     *
      * @param data the bytes array transformed from message need to be sent
      */
     public void serverSendData(byte[] data) {
@@ -692,9 +697,10 @@ public class UI extends JFrame {
 
     /**
      * For server to send painting actions to its connected clients
-     * @param row the row where painting actions performed
-     * @param column the column where painting actions performed
-     * @param color the color used
+     *
+     * @param row       the row where painting actions performed
+     * @param column    the column where painting actions performed
+     * @param color     the color used
      * @param specifier if 135, paint pixel; if 150, paint area
      */
     public void serverSendData(int row, int column, int color, int specifier) {
@@ -778,6 +784,7 @@ public class UI extends JFrame {
 
     /**
      * receive data from TCP of a client
+     *
      * @param clientSocket socket of the client
      */
     public void serve(Socket clientSocket) {
@@ -786,6 +793,7 @@ public class UI extends JFrame {
 
     /**
      * used for server
+     *
      * @throws IOException
      */
     public void server() throws IOException {
