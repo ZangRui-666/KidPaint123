@@ -779,7 +779,7 @@ public class UI extends JFrame {
      * @param color     the color used
      * @param specifier if 135, paint pixel; if 150, paint area
      */
-    public void serverSendData(int row, int column, int color, int specifier) {
+    public synchronized void serverSendData(int row, int column, int color, int specifier) {
         synchronized (connectedClients) {
             for (Socket clientSocket : connectedClients) {
                 new Thread(() -> {
@@ -794,8 +794,6 @@ public class UI extends JFrame {
                         out.writeInt(12345);
                     } catch (IOException e) {
                     }
-
-
                 }).start();
             }
         }
