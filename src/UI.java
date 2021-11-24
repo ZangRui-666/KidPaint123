@@ -38,7 +38,7 @@ public class UI extends JFrame {
     static ServerSocket serverSocket;
     static List<Socket> connectedClients = new ArrayList();
     static List<String> clientsNames = new ArrayList<>();
-
+    private boolean freeze = false;
 
     private String message;
     private static UI instance;
@@ -154,6 +154,8 @@ public class UI extends JFrame {
             // handle the mouse-up event of the paint panel
             @Override
             public void mouseReleased(MouseEvent e) {
+                if (freeze==true&&!KidPaint.isServer)
+                    return;
                 boolean isChanged = false;
                 int column = e.getX() / blockSize;
                 int row = e.getY() / blockSize;
@@ -173,6 +175,8 @@ public class UI extends JFrame {
 
             @Override
             public void mouseDragged(MouseEvent e) {
+                if(freeze==true&&!KidPaint.isServer)
+                    return;
                 if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0) {
                     int column = e.getX() / blockSize;
                     int row = e.getY() / blockSize;
@@ -272,28 +276,34 @@ public class UI extends JFrame {
         });
 
         //add revocation button allow user to do revocation
-        revocationBt = new JButton("revocation");
+        revocationBt = new JButton("freeze");
         toolPanel.add(revocationBt);
 
         //add listener of the revocation button
         revocationBt.addActionListener(e -> {
-            System.out.println("The size of linkedList is" + dataList.size());
-            System.out.println("now the data is");
-            for (int i = 0; i < 20; i++)
+            /*System.out.println("The size of linkedList is" + dataList.size());
+            System.out.println("now the data is");*/
+            /*for (int i = 0; i < 20; i++)
                 System.out.print(data[i][0] + ", ");
             System.out.println();
             if (dataList.size() > 1) {
                 dataList.removeLast();
                 System.out.println("remove last");
-                System.gc();
-                Runtime.getRuntime().gc();
             }
             setData(dataList.getLast(), 25);
             System.out.println("The data after update is");
             for (int i = 0; i < 20; i++)
                 System.out.print(data[i][0] + ", ");
-            System.out.println();
-
+            System.out.println();*/
+            if(KidPaint.isServer){
+                if(freeze=false){
+                    freeze=true;
+                    serverSendData(188);
+                }else{
+                    freeze=false;
+                    serverSendData(189);
+                }
+            }
         });
 
         //save button
@@ -482,63 +492,73 @@ public class UI extends JFrame {
             while (true) {
                 int len = in.readInt();
                 int specifier = in.readInt();
-                if (specifier == 100) {
-                    in.read(buffer, 0, len);
-                    updateChatbox(buffer, len);
-                    if (KidPaint.isServer) {
-                        byte[] trimmedBuffer = new byte[len];
-                        System.arraycopy(buffer, 0, trimmedBuffer, 0, len);
-                        serverSendData(trimmedBuffer);
-                    }
-                } else if (specifier == 223) {
-                    int[][] newData = new int[20][20];
-                    for (int i = 0; i < 20; i++)
-                        for (int j = 0; j < 20; j++)
-                            newData[i][j] = in.readInt();
-                    setData(newData, 25);
-                    if (KidPaint.isServer) {
-                        String name = clientsNames.get(connectedClients.indexOf(socket));
-                        serverSendData(name);
+                switch (specifier) {
+                    case 100:
+                        in.read(buffer, 0, len);
+                        updateChatbox(buffer, len);
+                        if (KidPaint.isServer) {
+                            byte[] trimmedBuffer = new byte[len];
+                            System.arraycopy(buffer, 0, trimmedBuffer, 0, len);
+                            serverSendData(trimmedBuffer);
+                        }
+                        break;
+                    case 223:
+                        int[][] newData = new int[20][20];
+                        for (int i = 0; i < 20; i++)
+                            for (int j = 0; j < 20; j++)
+                                newData[i][j] = in.readInt();
+                        setData(newData, 25);
+                        if (KidPaint.isServer) {
+                            String name = clientsNames.get(connectedClients.indexOf(socket));
+                            serverSendData(name);
 
-                    }
-                } else if (specifier == 236) {
-                    if (KidPaint.isServer) {
-                        synchronized (clientsNames) {
-                            synchronized (connectedClients) {
-                                DataInputStream dos = new DataInputStream(socket.getInputStream());
-                                byte[] b = new byte[1024];
-                                dos.read(b, 0, len);
-                                String str = new String(b, 0, len);
-                                int index = connectedClients.indexOf(socket);
-                                clientsNames.add(index, str);
-                                String msg = str + " has joined the studio";
-                                serverSendData((msg).getBytes());
-                                onTextInputted(msg);
-                                listView.setListData(clientsNames.toArray(new String[clientsNames.size()]));
+                        }
+                        break;
+                    case 236:
+                        if (KidPaint.isServer) {
+                            synchronized (clientsNames) {
+                                synchronized (connectedClients) {
+                                    DataInputStream dos = new DataInputStream(socket.getInputStream());
+                                    byte[] b = new byte[1024];
+                                    dos.read(b, 0, len);
+                                    String str = new String(b, 0, len);
+                                    int index = connectedClients.indexOf(socket);
+                                    clientsNames.add(index, str);
+                                    String msg = str + " has joined the studio";
+                                    serverSendData((msg).getBytes());
+                                    onTextInputted(msg);
+                                    listView.setListData(clientsNames.toArray(new String[clientsNames.size()]));
 
+                                }
                             }
                         }
-                    }
-                } else if (specifier == 135 || specifier == 150) {
-                    int row = in.readInt();
-                    int column = in.readInt();
-                    int color = in.readInt();
-                    int end = in.readInt();
-                    if (end == 12345) {
-                        if (specifier == 135) {
-                            paintPixel(row, column, color);
-                            System.out.println("Server received a message");
-                            if (KidPaint.isServer)
-                                serverSendData(row, column, color, 135);
+                        break;
+                    case 135:
+                    case 150:
+                        int row = in.readInt();
+                        int column = in.readInt();
+                        int color = in.readInt();
+                        int end = in.readInt();
+                        if (end == 12345) {
+                            if (specifier == 135) {
+                                paintPixel(row, column, color);
+                                System.out.println("Server received a message");
+                                if (KidPaint.isServer)
+                                    serverSendData(row, column, color, 135);
+                            }
+                            if (specifier == 150) {
+                                paintArea(row, column, color);
+                                if (KidPaint.isServer)
+                                    serverSendData(row, column, color, 150);
+                            }
                         }
-                        if (specifier == 150) {
-                            paintArea(row, column, color);
-                            if (KidPaint.isServer)
-                                serverSendData(row, column, color, 150);
-                        }
-                    }
-
-
+                        break;
+                    case 188:
+                        freeze = true;
+                        break;
+                    case 189:
+                        freeze = false;
+                        break;
                 }
             }
         } catch (IOException e) {
@@ -726,6 +746,26 @@ public class UI extends JFrame {
     }
 
     /**
+     * For server to send the freeze or unfreeze instruction to the clients
+     * @param specifier
+     */
+    public void serverSendData(int specifier){
+        synchronized (connectedClients) {
+            for (Socket clientSocket : connectedClients) {
+                new Thread(() -> {
+                    try {
+                        DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+                        System.out.println("serverSendMessage freeze" + specifier);
+                        out.writeInt(4);
+                        out.writeInt(specifier);
+                    } catch (IOException e) {
+                    }
+                }).start();
+            }
+        }
+    }
+
+    /**
      * it will be invoked if the user selected the specific color through the color picker
      *
      * @param colorValue - the selected color
@@ -763,8 +803,6 @@ public class UI extends JFrame {
             paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
 
             if (KidPaint.isServer) {
-                System.gc();
-                Runtime.getRuntime().gc();
                 int[][] newData = new int[20][20];
                 for (int i = 0; i < 20; i++) {
                     System.arraycopy(data[i], 0, newData[i], 0, 20);
