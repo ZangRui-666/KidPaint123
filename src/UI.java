@@ -52,7 +52,7 @@ public class UI extends JFrame {
 
     int blockSize = 25;
     PaintMode paintMode = PaintMode.Pixel;
-    boolean isPickingColor = false;
+    private boolean isPickingColor = false;
 
     /**
      * get the instance of UI. Singleton design pattern.
@@ -404,7 +404,7 @@ public class UI extends JFrame {
             });
 
             //undo button
-            JButton revocationBt = new JButton("undo");
+            JButton revocationBt = new JButton("Undo");
             severJp.add(revocationBt);
             revocationBt.addActionListener(e -> {
                 for (int i = 0; i < 20; i++)
@@ -429,7 +429,7 @@ public class UI extends JFrame {
             sp.setPreferredSize(new Dimension(100, 25));
 
             //add delete button to kick out clients
-            JButton btn = new JButton("Delete");
+            JButton btn = new JButton("Remove");
             manageGroupJP.add(sp);
             manageGroupJP.add(btn);
             manageGroupJP.setBackground(Color.white);
@@ -515,7 +515,7 @@ public class UI extends JFrame {
      *
      * @throws IOException
      */
-    public void receiveAndNotify() throws IOException {
+    private void receiveAndNotify() throws IOException {
         message = "##" + KidPaint.studioName + ";;" + "2345";
         while (true) {
             DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
@@ -640,7 +640,7 @@ public class UI extends JFrame {
     /**
      * For client to send the data array to connected clients
      */
-    public void clientSend() {
+     private void clientSend() {
         try {
             DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
             out.writeInt(1600);
@@ -665,7 +665,7 @@ public class UI extends JFrame {
      * @param color     the color used
      * @param specifier if 135, paint pixel; if 150, paint area
      */
-    public void clientSend(int row, int column, int color, int specifier) {
+    private void clientSend(int row, int column, int color, int specifier) {
         try {
             DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
             System.out.println("clientSendMessage" + row + ", " + column + ", " + color);
@@ -686,7 +686,7 @@ public class UI extends JFrame {
      *
      * @param data the bytes array transformed from the message
      */
-    public void clientSend(byte[] data) {
+    private void clientSend(byte[] data) {
         try {
             DataOutputStream out = new DataOutputStream(KidPaint.socket.getOutputStream());
             out.writeInt(data.length);
@@ -703,7 +703,7 @@ public class UI extends JFrame {
      *
      * @param name the name who made the change
      */
-    public void serverSendData(String name) {
+    private synchronized void serverSendData(String name) {
         String msg = name + "has made a change";
         onTextInputted(msg);
         serverSendData(msg.getBytes());
@@ -734,7 +734,7 @@ public class UI extends JFrame {
      * @param cSocket the socket of target client
      * @param data    the bytes array transformed from message need to be sent
      */
-    public void serverSendData(Socket cSocket, byte[] data) {
+    private synchronized void serverSendData(Socket cSocket, byte[] data) {
         DataOutputStream out;
         try {
             out = new DataOutputStream(cSocket.getOutputStream());
@@ -752,7 +752,7 @@ public class UI extends JFrame {
      *
      * @param data the bytes array transformed from message need to be sent
      */
-    public void serverSendData(byte[] data) {
+    private synchronized void serverSendData(byte[] data) {
         synchronized (connectedClients) {
             for (Socket clientSocket : connectedClients) {
                 new Thread(() -> {
@@ -779,7 +779,7 @@ public class UI extends JFrame {
      * @param color     the color used
      * @param specifier if 135, paint pixel; if 150, paint area
      */
-    public synchronized void serverSendData(int row, int column, int color, int specifier) {
+    private synchronized void serverSendData(int row, int column, int color, int specifier) {
         synchronized (connectedClients) {
             for (Socket clientSocket : connectedClients) {
                 new Thread(() -> {
@@ -804,7 +804,7 @@ public class UI extends JFrame {
      *
      * @param specifier
      */
-    public void serverSendData(int specifier) {
+    private synchronized void serverSendData(int specifier) {
         synchronized (connectedClients) {
             for (Socket clientSocket : connectedClients) {
                 new Thread(() -> {
@@ -847,7 +847,7 @@ public class UI extends JFrame {
      *
      * @param col, row - the position of the selected pixel
      */
-    public synchronized void paintPixel(int col, int row, int color) {
+    private synchronized void paintPixel(int col, int row, int color) {
         synchronized (data) {
             if (col >= data.length || row >= data[0].length) return;
 
@@ -880,7 +880,7 @@ public class UI extends JFrame {
      *
      * @param clientSocket socket of the client
      */
-    public void serve(Socket clientSocket) {
+    private void serve(Socket clientSocket) {
         receiveData(clientSocket);
     }
 
@@ -923,7 +923,7 @@ public class UI extends JFrame {
      * @param col, row - the position of the selected pixel
      * @return a list of modified pixels
      */
-    public boolean paintArea(int col, int row, int color) {
+    public synchronized boolean paintArea(int col, int row, int color) {
         LinkedList<Point> filledPixels = new LinkedList<>();
         boolean signal = false;
         synchronized (data) {
