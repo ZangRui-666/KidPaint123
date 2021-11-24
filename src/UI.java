@@ -403,8 +403,8 @@ public class UI extends JFrame {
                 }
             });
 
-            //revocation button
-            JButton revocationBt = new JButton("revocation");
+            //undo button
+            JButton revocationBt = new JButton("undo");
             severJp.add(revocationBt);
             revocationBt.addActionListener(e -> {
                 for (int i = 0; i < 20; i++)
@@ -415,6 +415,7 @@ public class UI extends JFrame {
                     System.out.println("remove last");
                 }
                 setData(dataList.getLast(), 25);
+                serverSendData(KidPaint.name);
                 System.out.println("The data after update is");
                 for (int i = 0; i < 20; i++)
                     System.out.print(data[i][0] + ", ");
