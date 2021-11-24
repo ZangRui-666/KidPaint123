@@ -138,7 +138,7 @@ public class UI extends JFrame {
         paintPanel.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if(isPickingColor){
+                if (isPickingColor) {
                     int column = e.getX() / blockSize;
                     int row = e.getY() / blockSize;
                     if (column > 19 || row > 19)
@@ -148,9 +148,9 @@ public class UI extends JFrame {
                     pnlColorPicker.setBackground(new Color(selectedColor));
                     return;
                 }
-                if(freeze==true&&KidPaint.isServer)
+                if (freeze == true && KidPaint.isServer)
                     return;
-                if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0){
+                if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0) {
                     int column = e.getX() / blockSize;
                     int row = e.getY() / blockSize;
                     if (column > 19 || row > 19)
@@ -183,7 +183,7 @@ public class UI extends JFrame {
             // handle the mouse-up event of the paint panel
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (freeze==true&&!KidPaint.isServer)
+                if (freeze == true && !KidPaint.isServer)
                     return;
                 boolean isChanged = false;
                 int column = e.getX() / blockSize;
@@ -203,7 +203,7 @@ public class UI extends JFrame {
 
             @Override
             public void mouseDragged(MouseEvent e) {
-                if(freeze==true&&!KidPaint.isServer)
+                if (freeze == true && !KidPaint.isServer)
                     return;
                 if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0) {
                     int column = e.getX() / blockSize;
@@ -795,9 +795,10 @@ public class UI extends JFrame {
 
     /**
      * For server to send the freeze or unfreeze instruction to the clients
+     *
      * @param specifier
      */
-    public void serverSendData(int specifier){
+    public void serverSendData(int specifier) {
         synchronized (connectedClients) {
             for (Socket clientSocket : connectedClients) {
                 new Thread(() -> {
@@ -959,7 +960,10 @@ public class UI extends JFrame {
      * @param blockSize
      */
     public synchronized void setData(int[][] data, int blockSize) {
-        this.data = data;
+        int[][] newData = new int[20][20];
+        for (int i = 0; i < 20; i++)
+            System.arraycopy(data, 0, newData, 0, 20);
+        this.data = newData;
         this.blockSize = blockSize;
         paintPanel.setPreferredSize(new Dimension(data.length * blockSize, data[0].length * blockSize));
         paintPanel.repaint();
