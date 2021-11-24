@@ -47,7 +47,7 @@ public class UI extends JFrame {
 
     int[][] data = new int[20][20];            // pixel color data array
     static LinkedList<int[][]> dataList = new LinkedList<>();
-    Vector<int[][]> vectorList = new Vector();
+    // Vector<int[][]> vectorList = new Vector();
     static int MAX = 10;
 
     int blockSize = 25;
@@ -392,22 +392,8 @@ public class UI extends JFrame {
 
             //add listener of the revocation button
             freezeBt.addActionListener(e -> {
-            /*System.out.println("The size of linkedList is" + dataList.size());
-            System.out.println("now the data is");*/
-            /*for (int i = 0; i < 20; i++)
-                System.out.print(data[i][0] + ", ");
-            System.out.println();
-            if (dataList.size() > 1) {
-                dataList.removeLast();
-                System.out.println("remove last");
-            }
-            setData(dataList.getLast(), 25);
-            System.out.println("The data after update is");
-            for (int i = 0; i < 20; i++)
-                System.out.print(data[i][0] + ", ");
-            System.out.println();*/
                 if (KidPaint.isServer) {
-                    if (freeze = false) {
+                    if (!freeze) {
                         freeze = true;
                         serverSendData(188);
                     } else {
@@ -415,6 +401,25 @@ public class UI extends JFrame {
                         serverSendData(189);
                     }
                 }
+            });
+
+            //revocation button
+            JButton revocationBt = new JButton("revocation");
+            severJp.add(revocationBt);
+            revocationBt.addActionListener(e -> {
+                for (int i = 0; i < 20; i++)
+                    System.out.print(data[i][0] + ", ");
+                System.out.println();
+                if (dataList.size() > 1) {
+                    dataList.removeLast();
+                    System.out.println("remove last");
+                }
+                setData(dataList.getLast(), 25);
+                System.out.println("The data after update is");
+                for (int i = 0; i < 20; i++)
+                    System.out.print(data[i][0] + ", ");
+                System.out.println();
+
             });
 
             //add listView of current connected clients
@@ -451,6 +456,8 @@ public class UI extends JFrame {
                 if (listView.getSelectedValue() != null)
                     System.out.println(listView.getSelectedValue().trim());
             });
+
+
         }
 
         JPanel msgPanel = new JPanel();
@@ -962,7 +969,7 @@ public class UI extends JFrame {
     public synchronized void setData(int[][] data, int blockSize) {
         int[][] newData = new int[20][20];
         for (int i = 0; i < 20; i++)
-            System.arraycopy(data, 0, newData, 0, 20);
+            System.arraycopy(data[i], 0, newData[i], 0, 20);
         this.data = newData;
         this.blockSize = blockSize;
         paintPanel.setPreferredSize(new Dimension(data.length * blockSize, data[0].length * blockSize));
