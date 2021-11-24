@@ -34,7 +34,7 @@ public class UI extends JFrame {
     private JPanel paintPanel;
     private JToggleButton tglPen;
     private JToggleButton tglBucket;
-    private JButton revocationBt;
+    private JButton freezeBt;
     static ServerSocket serverSocket;
     static List<Socket> connectedClients = new ArrayList();
     static List<String> clientsNames = new ArrayList<>();
@@ -210,7 +210,7 @@ public class UI extends JFrame {
         basePanel.add(scrollPaneLeft, BorderLayout.CENTER);
 
         JPanel toolPanel = new JPanel();
-        toolPanel.setPreferredSize(new Dimension(600, 100));
+        toolPanel.setPreferredSize(new Dimension(600, 120));
         basePanel.add(toolPanel, BorderLayout.NORTH);
         toolPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
@@ -275,36 +275,7 @@ public class UI extends JFrame {
             }
         });
 
-        //add revocation button allow user to do revocation
-        revocationBt = new JButton("freeze");
-        toolPanel.add(revocationBt);
 
-        //add listener of the revocation button
-        revocationBt.addActionListener(e -> {
-            /*System.out.println("The size of linkedList is" + dataList.size());
-            System.out.println("now the data is");*/
-            /*for (int i = 0; i < 20; i++)
-                System.out.print(data[i][0] + ", ");
-            System.out.println();
-            if (dataList.size() > 1) {
-                dataList.removeLast();
-                System.out.println("remove last");
-            }
-            setData(dataList.getLast(), 25);
-            System.out.println("The data after update is");
-            for (int i = 0; i < 20; i++)
-                System.out.print(data[i][0] + ", ");
-            System.out.println();*/
-            if(KidPaint.isServer){
-                if(freeze=false){
-                    freeze=true;
-                    serverSendData(188);
-                }else{
-                    freeze=false;
-                    serverSendData(189);
-                }
-            }
-        });
 
         //save button
         JButton saveBt = new JButton("save");
@@ -334,11 +305,15 @@ public class UI extends JFrame {
         });
 
         //load button
+        JPanel loadJp = new JPanel();
+        loadJp.setPreferredSize(new Dimension(550, 35));
+        toolPanel.add(loadJp);
+        loadJp.setBackground(Color.white);
         JButton loadBt = new JButton("load (input filename)");
         JTextField loadFileText = new JTextField();
         loadFileText.setPreferredSize(new Dimension(150, 30));
-        toolPanel.add(loadBt);
-        toolPanel.add(loadFileText);
+        loadJp.add(loadBt);
+        loadJp.add(loadFileText);
         loadBt.addActionListener(e -> {
             //load action
             if (loadFileText.equals("")) return;
@@ -373,6 +348,41 @@ public class UI extends JFrame {
         manageGroupJP.setLayout(new FlowLayout());
 
         if (KidPaint.isServer) {
+            JPanel severJp = new JPanel();
+            severJp.setBackground(Color.white);
+            severJp.setPreferredSize(new Dimension(550, 40));
+
+            //add freeze button allow sever to do freeze
+            freezeBt = new JButton("freeze");
+            severJp.add(freezeBt);
+
+            //add listener of the revocation button
+            freezeBt.addActionListener(e -> {
+            /*System.out.println("The size of linkedList is" + dataList.size());
+            System.out.println("now the data is");*/
+            /*for (int i = 0; i < 20; i++)
+                System.out.print(data[i][0] + ", ");
+            System.out.println();
+            if (dataList.size() > 1) {
+                dataList.removeLast();
+                System.out.println("remove last");
+            }
+            setData(dataList.getLast(), 25);
+            System.out.println("The data after update is");
+            for (int i = 0; i < 20; i++)
+                System.out.print(data[i][0] + ", ");
+            System.out.println();*/
+                if (KidPaint.isServer) {
+                    if (freeze = false) {
+                        freeze = true;
+                        serverSendData(188);
+                    } else {
+                        freeze = false;
+                        serverSendData(189);
+                    }
+                }
+            });
+
             //add listView of current connected clients
             listView.setListData(clientsNames.toArray(new String[clientsNames.size()]));
             JScrollPane sp = new JScrollPane(listView, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -384,7 +394,8 @@ public class UI extends JFrame {
             manageGroupJP.add(btn);
             manageGroupJP.setBackground(Color.white);
 
-            toolPanel.add(manageGroupJP);
+            severJp.add(manageGroupJP);
+            toolPanel.add(severJp);
             btn.addActionListener(e -> {
                 synchronized (clientsNames) {
                     synchronized (connectedClients) {
