@@ -29,7 +29,7 @@ public class LoginUI extends JFrame implements ActionListener {
     }
 
 
-    public LoginUI() {
+    private LoginUI() {
         //get container of the window
         Container container = this.getContentPane();
         container.setLayout(new GridLayout(0, 1, 10, 10));
@@ -117,11 +117,6 @@ public class LoginUI extends JFrame implements ActionListener {
                 isLogin = true;
             }
         }
-    }
-
-    //get name of the user input
-    public String getName() {
-        return name;
     }
 }
 

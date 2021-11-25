@@ -32,7 +32,7 @@ public class GroupUI extends JFrame implements ActionListener {
         return instance;
     }
 
-    public GroupUI() {
+    private GroupUI() {
         try {
             KidPaint.dSocket = new DatagramSocket(5555);
         } catch (SocketException e) {
