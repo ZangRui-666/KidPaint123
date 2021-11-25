@@ -141,7 +141,9 @@ public class GroupUI extends JFrame implements ActionListener {
             }
     }
 
-
+    /**
+     * Receive UDP packet from the server
+     */
     private void receiveMessage() {
         byte[] b = new byte[1024];
         DatagramPacket packet = new DatagramPacket(b, 1024);
@@ -159,10 +161,15 @@ public class GroupUI extends JFrame implements ActionListener {
                 }
             }
         } catch (IOException e) {
-            System.out.println("nothing happened");
+            System.out.println("Receive UDP over");
         }
     }
 
+    /**
+     * Connect to the chosen server by TCP
+     * @param IP The IP of the chosen server
+     * @param port The port number of the chosen server
+     */
     private void connectToServer(String IP, int port) {
         try {
             KidPaint.socket = new Socket(IP, port);
@@ -175,6 +182,9 @@ public class GroupUI extends JFrame implements ActionListener {
         }
     }
 
+    /**
+     * Send a broadcast package to find the server
+     */
     private void sendMessage() {
         try {
             byte[] msg = "Find Studio".getBytes();

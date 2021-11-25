@@ -1,16 +1,10 @@
 import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 
 public class KidPaint {
-	static String name = "XiaoMing";
-	static String studioName = "ray" ;
-	static String studioIP;
-	static String port;
-	static boolean isServer= true;
+	static String name = "";
+	static String studioName = "" ;
+	static boolean isServer= false;
 	static Socket socket;
 	static DatagramSocket dSocket;
 
@@ -21,7 +15,7 @@ public class KidPaint {
 		while (!LoginUI.isLogin){
 			try {
 				Thread.sleep(1);
-			} catch(Exception ex) {}
+			} catch(Exception ignored) {}
 		}
 		loginUI.setVisible(false);
 
@@ -29,8 +23,8 @@ public class KidPaint {
 		groupUI.setVisible(true);
 		while (studioName.equals("")){
 			try {
-				Thread.sleep(0);
-			} catch(Exception ex) {}
+				Thread.sleep(1);
+			} catch(Exception ignored) {}
 		}
 		groupUI.setVisible(false);
 

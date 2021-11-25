@@ -70,31 +70,9 @@ public class UI extends JFrame {
      * private constructor. To create an instance of UI, call UI.getInstance() instead.
      */
     private UI() {
-        if (KidPaint.isServer) {
-            try {
-                KidPaint.dSocket = new DatagramSocket(5555);
-            } catch (SocketException e) {
-                e.printStackTrace();
-            }
-            new Thread(() -> {
-                while (true) {
-                    try {
-                        receiveAndNotify();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-            new Thread(() -> {
-                try {
-                    server();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }).start();
-        } else {
-            new Thread(() -> receiveData(KidPaint.socket)).start();
-        }
+
+        // call run to perform the function as server or client
+        run();
 
         //set title and base layout of the base panel
         setTitle("KidPaint");
@@ -373,7 +351,7 @@ public class UI extends JFrame {
                 JOptionPane.showMessageDialog(null, "The file is not exist!", "Notification", JOptionPane.WARNING_MESSAGE);
                 System.out.println("The file is not exist!");
             } catch (IOException ioException) {
-                ioException.printStackTrace();
+                System.out.println("Something wrong");
             }
         });
 
@@ -407,19 +385,13 @@ public class UI extends JFrame {
             JButton revocationBt = new JButton("Undo");
             severJp.add(revocationBt);
             revocationBt.addActionListener(e -> {
-                for (int i = 0; i < 20; i++)
-                    System.out.print(data[i][0] + ", ");
+
                 System.out.println();
                 if (dataList.size() > 1) {
                     dataList.removeLast();
-                    System.out.println("remove last");
                 }
                 setData(dataList.getLast(), 25);
                 serverSendData(KidPaint.name);
-                System.out.println("The data after update is");
-                for (int i = 0; i < 20; i++)
-                    System.out.print(data[i][0] + ", ");
-                System.out.println();
 
             });
 
@@ -447,7 +419,6 @@ public class UI extends JFrame {
 
                             listView.setListData(clientsNames.toArray(new String[clientsNames.size()]));
                         } catch (IOException ex) {
-                            ex.printStackTrace();
                         }
 
                     }
@@ -509,6 +480,37 @@ public class UI extends JFrame {
     }
 
     /**
+     * Perform the function as server or client
+     */
+    private void run() {
+        if (KidPaint.isServer) {
+            try {
+                KidPaint.dSocket = new DatagramSocket(5555);
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
+            new Thread(() -> {
+                while (true) {
+                    try {
+                        receiveAndNotify();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+            new Thread(() -> {
+                try {
+                    server();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+        } else {
+            new Thread(() -> receiveData(KidPaint.socket)).start();
+        }
+    }
+
+    /**
      * For server to receive UDP broadcast from potential clients and send the studio name back to them
      *
      * @throws IOException
@@ -520,20 +522,16 @@ public class UI extends JFrame {
             KidPaint.dSocket.receive(packet);
             String srcAddress = packet.getAddress().toString().substring(1);
             String msg = new String(packet.getData(), 0, packet.getLength());
-            System.out.println("Received a packet: " + msg);
             int dstPort = packet.getPort();
-            System.out.println(msg.equals("Find Studio"));
             if (msg.equals("Find Studio")) {
                 DatagramPacket p = new DatagramPacket(message.getBytes(), message.getBytes().length, InetAddress.getByName(srcAddress), dstPort);
                 KidPaint.dSocket.send(p);
-                System.out.println("Sent back a packet");
             }
         }
     }
 
     /**
      * receive data from socket using TCP
-     *
      * @param socket
      */
     private void receiveData(Socket socket) {
@@ -545,6 +543,7 @@ public class UI extends JFrame {
                 int specifier = in.readInt();
                 switch (specifier) {
                     case 100:
+                        // Chat box
                         in.read(buffer, 0, len);
                         updateChatbox(buffer, len);
                         if (KidPaint.isServer) {
@@ -554,6 +553,7 @@ public class UI extends JFrame {
                         }
                         break;
                     case 223:
+                        // Update the painting
                         int[][] newData = new int[20][20];
                         for (int i = 0; i < 20; i++)
                             for (int j = 0; j < 20; j++)
@@ -566,6 +566,7 @@ public class UI extends JFrame {
                         }
                         break;
                     case 236:
+                        // Add the information of the new client to the server
                         if (KidPaint.isServer) {
                             synchronized (clientsNames) {
                                 synchronized (connectedClients) {
@@ -586,6 +587,7 @@ public class UI extends JFrame {
                         break;
                     case 135:
                     case 150:
+                        // the painting instruction
                         int row = in.readInt();
                         int column = in.readInt();
                         int color = in.readInt();
@@ -593,7 +595,6 @@ public class UI extends JFrame {
                         if (end == 12345) {
                             if (specifier == 135) {
                                 paintPixel(row, column, color);
-                                System.out.println("Server received a message");
                                 if (KidPaint.isServer)
                                     serverSendData(row, column, color, 135);
                             }
@@ -605,10 +606,12 @@ public class UI extends JFrame {
                         }
                         break;
                     case 188:
+                        // the freezing instruction
                         freeze = true;
                         JOptionPane.showMessageDialog(null, "Your painting panel was frozen by the server", "Notification", JOptionPane.WARNING_MESSAGE);
                         break;
                     case 189:
+                        // the unfreezing instruction
                         freeze = false;
                         JOptionPane.showMessageDialog(null, "Your painting panel was unfrozen by the server, you can continue drawing now", "Notification", JOptionPane.WARNING_MESSAGE);
 
@@ -618,7 +621,6 @@ public class UI extends JFrame {
         } catch (IOException e) {
             if (!KidPaint.isServer)
                 JOptionPane.showMessageDialog(null, "The sever may be shut down, or you have been removed from the studio, but you can still draw offline.", "Notification", JOptionPane.WARNING_MESSAGE);
-            System.out.println("Connection reset, the sever may be shut down.");
         }
     }
 
@@ -753,7 +755,6 @@ public class UI extends JFrame {
                 new Thread(() -> {
                     try {
                         DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
-                        System.out.println("serverSendMessage" + new String(data) + data.length);
                         out.writeInt(data.length);
                         out.writeInt(100);
                         out.write(data, 0, data.length);
@@ -805,7 +806,7 @@ public class UI extends JFrame {
                 new Thread(() -> {
                     try {
                         DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
-                        System.out.println("serverSendMessage freeze" + specifier);
+                        System.out.println("serverSend freeze" + specifier);
                         out.writeInt(4);
                         out.writeInt(specifier);
                     } catch (IOException e) {
@@ -858,13 +859,7 @@ public class UI extends JFrame {
                     System.arraycopy(data[i], 0, newData[i], 0, 20);
                 }
                 dataList.add(newData);
-                System.out.println("add to datalist");
-                for (int j = 0; j < dataList.size(); j++) {
-                    for (int i = 0; i < 20; i++)
-                        System.out.print(dataList.get(j)[i][0] + ", ");
-                    System.out.println();
-                }
-                System.out.println();
+
             }
         }
 
@@ -953,13 +948,6 @@ public class UI extends JFrame {
                     System.arraycopy(data[i], 0, newData[i], 0, 20);
                 }
                 dataList.add(newData);
-
-                for (int j = 0; j < dataList.size(); j++) {
-                    for (int i = 0; i < 20; i++)
-                        System.out.print(dataList.get(j)[i][0] + ", ");
-                    System.out.println();
-                }
-                System.out.println();
             }
 
             paintPanel.repaint();
