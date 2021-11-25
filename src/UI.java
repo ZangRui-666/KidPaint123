@@ -148,7 +148,7 @@ public class UI extends JFrame {
                     pnlColorPicker.setBackground(new Color(selectedColor));
                     return;
                 }
-                if (freeze == true && KidPaint.isServer)
+                if (freeze == true && !KidPaint.isServer)
                     return;
                 if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0) {
                     int column = e.getX() / blockSize;

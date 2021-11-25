@@ -113,7 +113,7 @@ public class LoginUI extends JFrame implements ActionListener {
             String p1 = String.copyValueOf(licenceField.getPassword());
 
             if (p1.equals(licence) && !Objects.equals(name, "")) {
-                this.name = name;
+                KidPaint.name = name;
                 isLogin = true;
             }
         }
