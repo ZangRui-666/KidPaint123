@@ -14,12 +14,12 @@ public class LoginUI extends JFrame implements ActionListener {
     JPasswordField licenceField;
     JButton submitJButton;
     JPanel heroJPane, loginJPane, submitJPane;
-    String name;
     static boolean isLogin = false;
     private static LoginUI instance;
 
     /**
      * get the instance of LoginUI. Singleton design pattern.
+     *
      * @return initialized instance of LoinUI
      */
     public static LoginUI getInstance() {

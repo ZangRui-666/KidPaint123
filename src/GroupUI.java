@@ -167,7 +167,8 @@ public class GroupUI extends JFrame implements ActionListener {
 
     /**
      * Connect to the chosen server by TCP
-     * @param IP The IP of the chosen server
+     *
+     * @param IP   The IP of the chosen server
      * @param port The port number of the chosen server
      */
     private void connectToServer(String IP, int port) {
