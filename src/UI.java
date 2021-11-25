@@ -441,8 +441,6 @@ public class UI extends JFrame {
                     synchronized (connectedClients) {
                         int index = clientsNames.indexOf(listView.getSelectedValue());
                         try {
-                            String msg = "#*Goodbye*#";
-                            serverSendData(connectedClients.get(index), msg.getBytes());
                             connectedClients.get(index).close();
                             connectedClients.remove(index);
                             clientsNames.remove(index);
@@ -704,9 +702,6 @@ public class UI extends JFrame {
      * @param name the name who made the change
      */
     private synchronized void serverSendData(String name) {
-        String msg = name + "has made a change";
-        onTextInputted(msg);
-        serverSendData(msg.getBytes());
         synchronized (connectedClients) {
             for (Socket clientSocket : connectedClients) {
                 new Thread(() -> {
